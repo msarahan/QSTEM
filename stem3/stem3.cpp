@@ -1626,8 +1626,9 @@ void doCBED() {
 	static int oldMulsRepeat2 = 1;
 	static long iseed=0;
 	WAVEFUNC *wave = new WAVEFUNC(muls.nx,muls.ny);
-	static imageStruct *header = NULL;
-	imageStruct *header_read = NULL;
+	CImageIO *imageIO = new CImageIO(muls.nx, muls.ny);
+	//static imageStruct *header = NULL;
+	//imageStruct *header_read = NULL;
 
 	QSfMat avgArray(muls.nx,muls.ny), diffArray(muls.nx,muls.ny);
 	QSfVec chisq(muls.avgRuns);
@@ -1663,13 +1664,12 @@ void doCBED() {
 		muls.scanYStart = probeCenterY+probeOffsetY;
 		probe(&muls, wave,muls.scanXStart-muls.potOffsetX,muls.scanYStart-muls.potOffsetY);
 		if (muls.saveLevel > 2) {
-			if (header == NULL) 
-				header = makeNewHeaderCompact(1,muls.nx,muls.ny,wave->thickness,
-				muls.resolutionX,muls.resolutionY,
-				0,std::vector<float_tt>(),"wave function");
-			header->t = 0;
+			imageIO->SetThickness(wave->thickness);
+			imageIO->SetDx(muls.resolutionX);
+			imageIO->SetDy(muls.resolutionY);
+			imageIO->SetComment("wave function");
 			sprintf(systStr,"%s/wave_probe.img",muls.folder);
-			writeComplexImage(wave->wave,header,systStr);
+			imageIO->WriteComplexImage(wave->wave,systStr);
 			// writeImage(muls.wave,header,"wave->img");
 			// writeImage_old(muls.wave,muls.nx,muls.ny,wave->thickness,"wave->img");
 			// system("showimage diff.img 2 &");
@@ -1940,6 +1940,7 @@ void doCBED() {
 		displayProgress(1);
 	} /* end of for muls.avgCount=0.. */
 	delete(wave);
+	delete(imageIO);
 }
 /************************************************************************
 * End of doCBED()

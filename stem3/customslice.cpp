@@ -59,7 +59,7 @@ void make3DSlicesFT(MULS *muls) {
   int divCount = 0;
   char buf[128];
   float_tt dX,dZ;                      // real space resol. of FT box
-  imageStruct *header = NULL;
+  //imageStruct *header = NULL;
   char fileName[64];
 
 
@@ -299,18 +299,23 @@ void make3DSlicesFT(MULS *muls) {
     
   // save the potential file:
   if (muls->savePotential) {
+	CImageIO *imageIO = new CImageIO(Nxp,Nyp,dZp,dXp,dYp,0,std::vector<float_tt>(),"");
     for (iz=0;iz<Nzp;iz++) {
       sprintf(fileName,"%s/%s%d.img",muls->folder,muls->fileBase,iz);
       // printf("Saving potential layer %d to file %s\n",iz,filename); 
-	  if (header == NULL) header = makeNewHeaderCompact(1,Nxp,Nyp,dZp,dXp,dYp,0,std::vector<float_tt>(),NULL);
+	  //if (header == NULL) header = makeNewHeaderCompact(1,Nxp,Nyp,dZp,dXp,dYp,0,std::vector<float_tt>(),NULL);
 	  sprintf(buf,"Projected Potential (%d slices)",muls->slices);
-      header->comment = buf;
-      header->commentSize = (int)header->comment.length();
-      writeComplexImage(muls->trans[iz],header,fileName);      
+      //header->comment = buf;
+      //header->commentSize = (int)header->comment.length();
+	  imageIO->SetComment(std::string(buf));
+      imageIO->WriteComplexImage(muls->trans[iz],fileName);      
+
     } 
+	delete(imageIO);
   } /* end of if savePotential ... */
   
   printf("Calculation took %.1f sec, rc[0]: %gA\n",(getTime()-timer0),rcutoff[0]);
+
 }  // end of function
 
 

@@ -1,12 +1,10 @@
-
-
 #include <stdio.h>	/*  ANSI-C libraries */
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <time.h>
 
-#include "boost/shared_ptr.hpp"
+//#include "boost/shared_ptr.hpp"
 
 #include "stemtypes_fftw3.h"
 #include "imagelib_fftw3.h"
@@ -25,7 +23,7 @@
                    // format changes.
 
 CImageIO::CImageIO(int nx, int ny) :
-  m_headerSize(sizeof(imageStruct)-sizeof(float_tt *)-sizeof(char *));
+  m_headerSize(56),
   m_params(std::vector<float_tt>()),
   m_paramSize(0),
   m_nx(nx),
@@ -34,26 +32,24 @@ CImageIO::CImageIO(int nx, int ny) :
   m_t(0.0),
   m_dx(1.0),
   m_dy(1.0),
-  m_complexFlag(0),
   m_comment("")
 {
-}
+};
 
 CImageIO::CImageIO(int nx, int ny, float_tt t, float_tt dx, float_tt dy,
 			  int paramSize, std::vector<float_tt> params, std::string comment) :
-m_headerSize(sizeof(CImageIO)-sizeof(float_tt *)-sizeof(char *));
-m_params(params);
-m_paramSize(paramSize);
-m_m_nx(nx);
-m_ny(ny);
-m_version(VERSION);
-m_t(t);
-m_dx(dx);
-m_dy(dy);
-m_comment("");
-m_complexFlag(_cFlag);
+m_headerSize(56),
+m_params(params),
+m_paramSize(paramSize),
+m_nx(nx),
+m_ny(ny),
+m_version(VERSION),
+m_t(t),
+m_dx(dx),
+m_dy(dy),
+m_comment("")
 {
-}
+};
 
 void CImageIO::WriteComplexImage(const QScMat pix, const char *fileName) {
   FILE *fp;
@@ -62,17 +58,17 @@ void CImageIO::WriteComplexImage(const QScMat pix, const char *fileName) {
     printf("Could not write to file %s\n",fileName);
     exit(0);
   }
-  header->headerSize = sizeof(imageStruct)-sizeof(double *)-sizeof(char *);
   m_complexFlag = 1;
-  m_datasize = 2*sizeof(float_tt);
+  m_dataSize = 2*sizeof(float_tt);
 
   // fwrite((void *)header,header->headerSize,1,fp);
+  // TODO: should we write each element individually for clarity?
   fwrite((void *)this,m_headerSize,1,fp);
-  fwrite((void *)(&m_params[0]), sizeof(float_tt), m_paramSize, fp);
+  fwrite((void *)(&m_params[0]), sizeof(double), m_paramSize, fp);
   fwrite((void *)(m_comment.c_str()), 1, m_commentSize, fp);
   
   if (fwrite(pix.data(),m_dataSize,(size_t)(pix.cols()*pix.rows()),fp) != pix.cols()*pix.rows()) {
-    printf("Error while writing %d x %d data to file %s\n",pix.cols(),pix.row(),fileName);
+    printf("Error while writing %d x %d data to file %s\n",pix.cols(),pix.rows(),fileName);
     fclose(fp);
     exit(0);
   }
@@ -93,8 +89,9 @@ void CImageIO::WriteRealImage(const QSfMat pix, const char *fileName) {
   m_complexFlag = 0;
 
   // fwrite((void *)header,header->headerSize,1,fp);
+  // TODO: should we write each element individually for clarity?
   fwrite((void *)this,m_headerSize,1,fp);
-  fwrite((void *)(&m_params[0]), sizeof(float_tt), m_paramSize, fp);
+  fwrite((void *)(&m_params[0]), sizeof(double), m_paramSize, fp);
   fwrite((void *)(m_comment.c_str()), 1, m_commentSize, fp);
   if (fwrite(pix.data(),m_dataSize,(size_t)(pix.cols()*pix.rows()),fp) != pix.cols()*pix.rows()) {
     printf("writeRealImage: Error while writing data to file %s\n",fileName);
@@ -126,13 +123,10 @@ void CImageIO::ReadRealImage(QSfMat &pix, const char *fileName) {
       while (nRead < 1e5) nRead++;
     }
     else {
-	  // sets m_nx, m_ny, m_datasize, m_complex
-      getImageHeader(header,fp);
-
 	  // TODO: check if image to be read is complex - if so, they should be using the ReadComplexImage function instead.
 
       if ((m_nx != pix.cols())||(m_ny != pix.rows())) {
-		sprintf(error_string, "readImage: image size mismatch nx = %d (%d), ny = %d (%d)\n", header->nx,nx,header->ny,ny);
+		sprintf(error_string, "readImage: image size mismatch nx = %d (%d), ny = %d (%d)\n", m_nx,pix.cols(),m_ny,pix.rows());
 		throw std::exception(error_string);
       }
       nRead = fread((void *)pix.data(),sizeof(float_tt),(size_t)(pix.cols()*pix.rows()),fp);
@@ -151,8 +145,6 @@ void CImageIO::ReadRealImage(QSfMat &pix, const char *fileName) {
   }  while ((freadError > 0) && (++trial < maxTrial));
   
   if (fp != NULL) fclose(fp);
-
-  return header;
 }
 
 /***********************************************************
@@ -164,7 +156,7 @@ void CImageIO::ReadRealImage(QSfMat &pix, const char *fileName) {
  * allocated for it, and its size will be returned in the header struct
  * members nx, and ny.
  ***********************************************************/
-void CImageIO::ReadComplexImage(QScMat &pix, int nx, int ny, const char *fileName) {
+void CImageIO::ReadComplexImage(QScMat &pix, const char *fileName) {
   FILE *fp;
   size_t nRead=0;
   int trial=0,maxTrial=3,freadError=0;
@@ -177,19 +169,18 @@ void CImageIO::ReadComplexImage(QScMat &pix, int nx, int ny, const char *fileNam
       while (nRead < 1e5) nRead++;
     }
     else {
-      getImageHeader(header,fp);
-
-      if ((nx != m_nx)||(ny != m_ny)) {
-		sprintf(error_string, "readImage: image size mismatch nx = %d (%d), ny = %d (%d)\n", m_nx,nx,m_ny,ny);
+      if ((pix.cols() != m_nx)||(pix.rows() != m_ny)) {
+		sprintf(error_string, "readImage: image size mismatch nx = %d (%d), ny = %d (%d)\n", m_nx,pix.cols(),
+			m_ny,pix.rows());
 		throw std::exception(error_string);
       }
-      nRead = fread((void *)pix.data(),2*sizeof(float_tt),(size_t)(nx*ny),fp);
-      if (nRead != nx*ny) {
+      nRead = fread((void *)pix.data(),2*sizeof(float_tt),(size_t)(pix.rows()*pix.cols()),fp);
+      if (nRead != pix.rows()*pix.cols()) {
 		freadError = 1;
 		sprintf(error_string, "Error while reading data from file %s:"
 	       " %d (of %d) elements read\n"
 		   "EOF: %d, Ferror: %d, dataSize: %d\n",
-		   fileName,nRead,(nx)*(ny),feof(fp),ferror(fp),m_dataSize);
+		   fileName,nRead,(pix.cols())*(pix.rows()),feof(fp),ferror(fp),m_dataSize);
 		fclose(fp);
 		fp = NULL;
 		throw std::exception(error_string);
@@ -199,15 +190,13 @@ void CImageIO::ReadComplexImage(QScMat &pix, int nx, int ny, const char *fileNam
   }  while ((freadError > 0) && (++trial < maxTrial));
   
   if (fp != NULL) fclose(fp);
-
-  return header;
 }
 
 /*****************************************************************
  * Image header routines
  ****************************************************************/
 
-void ImageIO::SetHeaderComment(std::string comment) {
+void CImageIO::SetComment(std::string comment) {
 
   if (!comment.empty()) {
 	m_comment = comment;
@@ -222,7 +211,8 @@ void ImageIO::SetHeaderComment(std::string comment) {
  * or point to a valid memory region already, because the will be 
  * REALLOCed
  */
-void ImageIO::ReadImageHeader(FILE *fp) {
+/*
+void CImageIO::ReadImageHeader(FILE *fp) {
   int hSize=sizeof(imageStruct);
   char buf[200];
 
@@ -246,5 +236,5 @@ void ImageIO::ReadImageHeader(FILE *fp) {
   }
   // printf("DataSize: %d, complex: %d\n",header->dataSize,header->complexFlag);
 }
-
+*/
 
