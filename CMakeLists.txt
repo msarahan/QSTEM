@@ -7,22 +7,14 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX
 
 project(qstem)
 set (stem3_VERSION_MAJOR 2)
-set (stem3_VERSION_MINOR 22)
+set (stem3_VERSION_MINOR 30)
 
 set (EXECUTABLE_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/bin/")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 					
 find_package(fftw3 REQUIRED)
-
-if (UNIX)
-	find_package(Eigen3 REQUIRED)
-else(UNIX)
-	SET( EIGEN3_INCLUDE_DIR "$ENV{EIGEN3_INCLUDE_DIR}" )
-	IF( NOT EIGEN3_INCLUDE_DIR )
-	    MESSAGE( FATAL_ERROR "Please point the environment variable EIGEN3_INCLUDE_DIR to the root directory of your Eigen3 installation.")
-	ENDIF()
-endif(UNIX)
+find_package(Eigen REQUIRED)
 
 set (M_LIB "")
 
