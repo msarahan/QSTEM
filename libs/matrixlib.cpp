@@ -54,11 +54,6 @@ void vectDiff_f(QSf3Arr &a, QSf3Arr &b, QSf3Arr &c, int revFlag) {
   }
 }
 
-template <typename Derived>
-void showMatrix(const EigenBase<Derived>& m, std::string name) {
-  std::cout << "Here is the matrix " << name << ":\n" << m << std::endl;
-}
-
 /* This function will determine whether the point (point) lies
  * above or below the plane (p)
  * The plane defining vectors vect1, vect2, norm, and point will be used
