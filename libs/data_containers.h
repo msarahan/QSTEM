@@ -21,7 +21,7 @@ QSTEM - image simulation for TEM/STEM/CBED
 #define DATA_CONTAINERS_H
 
 #include <vector>
-#include "stemtypes_fftw3.h"
+#include <stemtypes_fftw3.h>
 
 // a structure for a probe/parallel beam wavefunction.
 // Separate from mulsliceStruct for parallelization.

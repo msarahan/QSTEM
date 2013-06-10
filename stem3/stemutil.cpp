@@ -25,7 +25,7 @@ QSTEM - image simulation for TEM/STEM/CBED
 #include <math.h>
 #include <time.h>
 #include <ctype.h>
-#ifndef WIN32
+#ifndef _WIN32
 #include <sys/time.h>
 #endif
 
@@ -726,7 +726,7 @@ double wavelength( double kev )
 
 
 double getTime() {
-#ifdef WIN32
+#ifdef _WIN32
 	return (double)time(NULL);
 #else
   timev tv;
