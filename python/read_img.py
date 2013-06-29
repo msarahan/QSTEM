@@ -72,12 +72,12 @@ def binread2D(filename, printFlag=True):
             img = np.fromfile(file=f, dtype=np.complex128, count=Nx*Ny)
         else:
             if printFlag:
-                fprintf('32-bit complex data, %.3fMB)\n',Nx*Ny*8/1048576);
+                print '32-bit complex data, %.3fMB)\n'%(Nx*Ny*8/1048576)
             img = np.fromfile(file=f, dtype=np.complex64, count = Nx*Ny)
     else:
         if doubleFlag:
             if printFlag:
-                fprintf('64-bit real data, %.3fMB)\n',Nx*Ny*8/1048576);
+                print '64-bit real data, %.3fMB)\n'%(Nx*Ny*8/1048576);
             img = np.fromfile(file=f, dtype=np.float64, count=Nx*Ny)
         else:
             if printFlag:
