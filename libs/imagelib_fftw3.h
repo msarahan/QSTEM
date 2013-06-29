@@ -51,14 +51,15 @@ public:
   void WriteRealImage(void **pix, const char *fileName);
   void WriteComplexImage(void **pix, const char *fileName);
   void ReadImage(void **pix, int nx, int ny, const char *fileName);
-  
-  //void WriteImage( std::string fileName);
         
   void SetComment(std::string comment);
   void SetThickness(double thickness);
   void SetParams(std::vector<double> params);
   void SetParameter(int index, double value);
   void SetResolution(double resX, double resY);
+
+  double GetThickness(){return m_t;}
+
 private:
   void WriteData(void **pix, const char *fileName);
   // reads in the header; returns the byte offset at which we should start reading image data.

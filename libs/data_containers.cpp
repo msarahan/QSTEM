@@ -95,6 +95,10 @@ void WAVEFUNC::WriteAvgArray(const char *fileName, const char *comment,
 void WAVEFUNC::ReadWave(const char *fileName)
 {
 	m_imageIO->ReadImage((void **)wave, nx, ny, fileName);
+	thickness = m_imageIO->GetThickness();
+	// resolution and image size are set by the constructor.  
+	//     We should not alter them!  We might want to check 
+	//     that they match, though.
 }
 
 void WAVEFUNC::ReadDiffPat(const char *fileName)

@@ -55,8 +55,15 @@ public:
 public:
 	// initializing constructor:
 	WAVEFUNC(int nx, int ny, float_tt resX, float_tt resY);
-	// define a copy constructor to create new arrays
-	//WAVEFUNC( WAVEFUNC& other );
+
+	float_tt GetThickness(){return thickness;}
+	float_tt GetResolutionX(){return resolutionX;}
+	float_tt GetResolutionY(){return resolutionY;}
+	// TODO: is detPos the same thing as iPos?
+	int GetDetPosX(){return detPosX;}
+	int GetDetPosY(){return detPosY;}
+	int GetSizeX(){return nx;}
+	int GetSizeY(){return ny;}
 
 	void WriteWave(const char *fileName, const char *comment="Wavefunction", 
 		std::vector<double>params = std::vector<double>());
