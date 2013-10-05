@@ -44,6 +44,7 @@ using namespace Eigen;
 typedef std::complex<float_tt> QScf;
 
 // Variable float (32 or 64-bit) types (lowercase f or c)
+typedef Derived QSmat;
 typedef Matrix< float_tt, Dynamic, Dynamic> QSfMat;
 typedef Matrix< float_tt, 3, 3> QSf3Mat;
 typedef Matrix< QScf, Dynamic, Dynamic> QScMat;
