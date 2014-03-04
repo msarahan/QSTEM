@@ -73,14 +73,13 @@ void CStructureWriterFactory::Register(const std::string &extension, CreateStruc
 	m_FactoryMap[extension] = pfnCreate;
 }
 
-StructureWriterPtr CStructureWriterFactory::GetWriter(const boost::filesystem::path &filename, 
-                                                        float_tt ax, float_tt by, float_tt cz)
+StructureWriterPtr CStructureWriterFactory::GetWriter(const boost::filesystem::path &filename)
 {
 std::string extension = filename.extension().string();
   boost::algorithm::to_lower(extension);
   FactoryMap::iterator it = m_FactoryMap.find(extension);
   if( it != m_FactoryMap.end() )
-    return it->second(filename, ax, by, cz);
+    return it->second(filename);
   return StructureWriterPtr();
 }
 
