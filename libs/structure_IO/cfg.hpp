@@ -41,6 +41,8 @@ private:
   unsigned m_entryCount; // The number of columns on any given line of data from the file
   bool m_isValid;  // If true, this object has a valid file to read atoms from.
   std::string m_buf;
+  float_tt m_lastReadMass;
+  unsigned m_lastReadElement;
 private:
   friend class CStructureReaderFactory;
   // Create an instance of this class, wrapped in a shared ptr
@@ -52,21 +54,20 @@ private:
 class CCfgWriter : public IStructureWriter
 {
 public:
-  CCfgWriter(const boost::filesystem::path &file, float_tt ax, float_tt by, float_tt cz);
+  CCfgWriter(const boost::filesystem::path &file);
   ~CCfgWriter();
 
-  int Write(std::vector <atom> &atoms, std::string run_id);
-  int WriteFractCubic(double *pos,int *Znum,double *dw,int natoms,char *fileName,
-                  double a,double b,double c);
+  int Write(std::vector <atom> &atoms, std::string run_id, float_tt ax, float_tt by, float_tt cz, 
+	  float_tt alpha, float_tt beta, float_tt gamma);
 private:
   boost::filesystem::path m_basePath;
-  float_tt m_ax, m_by, m_cz;
+
 private:
   friend class CStructureWriterFactory;
   // Create an instance of this class, wrapped in a shared ptr
   //     This should not be inherited - any subclass needs its own implementation.
-  static StructureWriterPtr Create(const boost::filesystem::path &file, float_tt ax, float_tt by, float_tt cz){
-    return StructureWriterPtr(new CCfgWriter(file, ax, by, cz));
+  static StructureWriterPtr Create(const boost::filesystem::path &file){
+    return StructureWriterPtr(new CCfgWriter(file));
   }  
 };
 

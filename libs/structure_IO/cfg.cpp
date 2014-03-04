@@ -105,25 +105,22 @@ int CCfgReader::ReadAtoms(std::vector<atom> &atoms)
 *******************************************************************************/
 
 int CCfgReader::ReadNextAtom(atom *newAtom) {
-  unsigned element;
   char *str = NULL;
-  float_tt mass;
   char buf[NCMAX];
 
   if (m_fp == NULL) {
     printf("Invalid CFG file!\n");
     return -1;
   }
-  //resetParamFile(m_fp);
 
   if (fgets(buf,NCMAX,m_fp) == NULL) return -1;
   /* check, if this is a new mass number */
   str = strnext(buf," \t");
   if ((atof(buf) >= 1.0) && ((str==NULL) || (*str == '#'))) {
-    mass = atof(buf);
+    m_lastReadMass = atof(buf);
     // printf("nV: %d, eC: %d (%g)\n",noVelocityFlag, entryCount,atof(m_buf));
     if (fgets(buf,NCMAX,m_fp) == NULL) return -1;    
-    element = getZNumber(buf); 
+    m_lastReadElement = getZNumber(buf); 
     // printf("*** found element %d (%s %d) ***\n",element,m_buf,strlen(m_buf));
     if (fgets(buf,NCMAX,m_fp) == NULL) return -1;
   }
@@ -142,12 +139,12 @@ int CCfgReader::ReadNextAtom(atom *newAtom) {
   newAtom->y    = m_atomData[1];
   newAtom->z    = m_atomData[2];
   // Temporary initialization: dw, occ, q are read if they exist
-  newAtom->dw   = 0.45*28.0/mass;	
+  newAtom->dw   = 0.45*28.0/m_lastReadMass;	
   newAtom->occ  = 1.0;
   newAtom->q    = 0.0;
 
-  newAtom->Znum = element;
-  newAtom->mass = mass;
+  newAtom->Znum = m_lastReadElement;
+  newAtom->mass = m_lastReadMass;
   // read the DW-factor
   if (m_entryCount > 3+3*(1-(int)m_noVelocity)) 
     newAtom->dw = m_atomData[3+3*(1-(int)m_noVelocity)];
@@ -162,11 +159,8 @@ int CCfgReader::ReadNextAtom(atom *newAtom) {
   return 0;
 }
 
-CCfgWriter::CCfgWriter(const boost::filesystem::path &path, float_tt ax, float_tt by, float_tt cz)
+CCfgWriter::CCfgWriter(const boost::filesystem::path &path)
   : m_basePath(path)
-  , m_ax(ax)
-  , m_by(by)
-  , m_cz(cz)
 {
 }
 
@@ -174,9 +168,10 @@ CCfgWriter::~CCfgWriter()
 {
 }
 
-int CCfgWriter::Write(std::vector<atom> &atoms, std::string run_id) {
+int CCfgWriter::Write(std::vector<atom> &atoms, std::string run_id, float_tt ax, float_tt by, float_tt cz, 
+	  float_tt alpha, float_tt beta, float_tt gamma) {
   int j;
-  char elem[16];
+  std::string elem;
 
   if (atoms.size() < 1) {
     printf("Atom array empty - no file written\n");
@@ -197,32 +192,26 @@ int CCfgWriter::Write(std::vector<atom> &atoms, std::string run_id) {
 
   fprintf(fp,"Number of particles = %d\n",atoms.size());
   fprintf(fp,"A = 1.0 Angstrom (basic length-scale)\n");
-  fprintf(fp,"H0(1,1) = %g A\nH0(1,2) = 0 A\nH0(1,3) = 0 A\n",m_ax);
-  fprintf(fp,"H0(2,1) = 0 A\nH0(2,2) = %g A\nH0(2,3) = 0 A\n",m_by);
-  fprintf(fp,"H0(3,1) = 0 A\nH0(3,2) = 0 A\nH0(3,3) = %g A\n",m_cz);
+  fprintf(fp,"H0(1,1) = %g A\nH0(1,2) = 0 A\nH0(1,3) = 0 A\n",ax);
+  fprintf(fp,"H0(2,1) = 0 A\nH0(2,2) = %g A\nH0(2,3) = 0 A\n",by);
+  fprintf(fp,"H0(3,1) = 0 A\nH0(3,2) = 0 A\nH0(3,3) = %g A\n",cz);
   fprintf(fp,".NO_VELOCITY.\nentry_count = 6\n");
 
   //printf("ax: %g, by: %g, cz: %g n: %d\n",m_ax,m_by,m_cz,atoms.size());
 
 
-  elem[2] = '\0';
-  elem[0] = elTable[2*atoms[0].Znum-2];
-  elem[1] = elTable[2*atoms[0].Znum-1];
-  // printf("ax: %g, by: %g, cz: %g n: %d\n",muls->ax,muls->by,muls->c,natoms);
-  if (elem[1] == ' ') elem[1] = '\0';
-  fprintf(fp,"%g\n%s\n",atoms[0].mass,elem);
-  fprintf(fp,"%g %g %g %g %.4f %.4f\n",atoms[0].x/m_ax,atoms[0].y/m_by,atoms[0].z/m_cz,
+  elem = getSymbol(atoms[0].Znum);
+  fprintf(fp,"%g\n%s\n",atoms[0].mass,elem.c_str());
+  fprintf(fp,"%g %g %g %g %.4f %.4f\n",atoms[0].x,atoms[0].y,atoms[0].z,
           atoms[0].dw,atoms[0].occ,atoms[0].q);
 
   for (j=1;j<atoms.size();j++) {
     if (atoms[j].Znum != atoms[j-1].Znum) {
-      elem[0] = elTable[2*atoms[j].Znum-2];
-      elem[1] = elTable[2*atoms[j].Znum-1];
-      if (elem[1] == ' ') elem[1] = '\0';
-      fprintf(fp,"%g\n%s\n",atoms[j].mass,elem);
+		elem = getSymbol(atoms[j].Znum);
+      fprintf(fp,"%g\n%s\n",atoms[j].mass,elem.c_str());
       // printf("%d: %g\n%s\n",j,2.0*atoms[j].Znum,elem);
     }
-    fprintf(fp,"%g %g %g %g %.4f %.4f\n",atoms[j].x/m_ax,atoms[j].y/m_by,atoms[j].z/m_cz,
+    fprintf(fp,"%g %g %g %g %.4f %.4f\n",atoms[j].x,atoms[j].y,atoms[j].z,
             atoms[j].dw,atoms[j].occ,atoms[j].q);
     // if (atoms[j].occ != 1) printf("Atom %d: occ = %g\n",j,atoms[j].occ);
   }
@@ -236,61 +225,5 @@ int CCfgWriter::Write(std::vector<atom> &atoms, std::string run_id) {
 * going below this limit will crash 
 * AtomEye.
 */
-
-// write CFG file using atomic positions stored in pos, Z's in Znum and DW-factors in dw
-// the unit cell is assumed to be cubic
-int CCfgWriter::WriteFractCubic(double *pos,int *Znum,double *dw,int natoms,char *fileName,
-                                   double a,double b,double c) {
-  FILE *fp;
-  int j;
-  char elem[16];
-  double ax,by,cz;
-  
-  if (natoms < 1) {
-    printf("Atom array empty - no file written\n");
-    return 1;
-  }
-  
-  fp = fopen(fileName, "w" );
-  if( fp == NULL ) {
-    printf("Cannot open file %s\n",fileName);
-    return 0;
-  }
-  
-  ax = a > MIN_EDGE_LENGTH ? a : MIN_EDGE_LENGTH;
-  by = b > MIN_EDGE_LENGTH ? b : MIN_EDGE_LENGTH;
-  cz = c > MIN_EDGE_LENGTH ? c : MIN_EDGE_LENGTH;
-  
-  fprintf(fp,"Number of particles = %d\n",natoms);
-  fprintf(fp,"A = 1.0 Angstrom (basic length-scale)\n");
-  fprintf(fp,"H0(1,1) = %g A\nH0(1,2) = 0 A\nH0(1,3) = 0 A\n",ax);
-  fprintf(fp,"H0(2,1) = 0 A\nH0(2,2) = %g A\nH0(2,3) = 0 A\n",by);
-  fprintf(fp,"H0(3,1) = 0 A\nH0(3,2) = 0 A\nH0(3,3) = %g A\n",cz);
-  fprintf(fp,".NO_VELOCITY.\nentry_count = 4\n");
-  printf("ax: %g, by: %g, cz: %g n: %d\n",ax,by,c,natoms);
-
-  
-  elem[2] = '\0';
-  elem[0] = elTable[2*Znum[0]-2];
-  elem[1] = elTable[2*Znum[0]-1];
-  // printf("ax: %g, by: %g, cz: %g n: %d\n",muls->ax,muls->by,muls->c,natoms);
-  if (elem[1] == ' ') elem[1] = '\0';
-  fprintf(fp,"%g\n%s\n",2.0*Znum[0],elem);
-  fprintf(fp,"%g %g %g %g\n",pos[0]*a/ax,pos[1]*b/by,pos[2]*c/cz,dw[0]);
-
-  for (j=1;j<natoms;j++) {
-    if (Znum[j] != Znum[j-1]) {
-      elem[0] = elTable[2*Znum[j]-2];
-      elem[1] = elTable[2*Znum[j]-1];
-      if (elem[1] == ' ') elem[1] = '\0';
-      fprintf(fp,"%g\n%s\n",2.0*Znum[j],elem);
-      // printf("%d: %g\n%s\n",j,2.0*atoms[j].Znum,elem);
-    }
-    fprintf(fp,"%g %g %g %g\n",pos[3*j+0]*a/ax,pos[3*j+1]*b/by,pos[3*j+2]*c/cz,dw[j]);
-  } 
-  fclose(fp);
-
-  return 1;
-}
 
 } // end namespace QSTEM
