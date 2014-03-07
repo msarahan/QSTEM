@@ -168,11 +168,12 @@ DetectorManager::DetectorManager(ConfigReaderPtr &configReader)
 void DetectorManager::LoadDetectors(ConfigReaderPtr &configReader, std::vector<float_tt> &thicknesses)
 {
   int numDetectors;
-
   m_thicknesses=thicknesses;
 
   m_detectors.resize(m_thicknesses.size());
+  
   configReader->ReadNumberOfDetectors(numDetectors);
+
   for (size_t plane_idx=0; plane_idx<m_thicknesses.size(); plane_idx++)
     {
       m_detectors[plane_idx].resize(numDetectors);
