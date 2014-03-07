@@ -44,7 +44,7 @@ static float sqrarg = 0.0f;
 namespace QSTEM
 {
 
-void ludcmp(float_tt **a, int n, int *indx, float_tt *d) {
+void ludcmp(float_tt *a, int n, int *indx, float_tt *d) {
   /* Given a matrix a[1..n][1..n], this routine replaces it by the
      LU decomposition of a rowwise permutation of itself. 
      a and n are input. a is output, arranged as in equation (2.3.14) above; 
@@ -56,6 +56,7 @@ void ludcmp(float_tt **a, int n, int *indx, float_tt *d) {
   */
   int i,imax=0,j,k; 
   float_tt big,dum,sum,temp; 
+  int idxij, idxik, idxkj;
   /*
     vv stores the implicit scaling of each row.
   */ 
@@ -66,7 +67,7 @@ void ludcmp(float_tt **a, int n, int *indx, float_tt *d) {
     // Loop over rows to get the implicit scaling information.
     big=0.0; 
     for (j=0;j<n;j++) 
-      if ((temp=fabs(a[i][j])) > big) 
+      if ((temp=fabs(a[i*n+j])) > big) 
 	big=temp; 
     if (big == 0.0) { 
       printf("Singular matrix in routine ludcmp\n"); 
@@ -78,19 +79,32 @@ void ludcmp(float_tt **a, int n, int *indx, float_tt *d) {
   for (j=0;j<n;j++) { 
     // This is the loop over columns of Crout's method. 
     for (i=0;i<j;i++) {  //This is equation (2.3.12) except for i = j. 
-      sum=a[i][j]; 
-      for (k=0;k<i;k++) 
-	sum -= a[i][k]*a[k][j]; 
-      a[i][j]=sum; 
+      idxij=i*n+j;
+      //sum=a[i][j]; 
+      sum=a[idxij]; 
+      for (k=0;k<i;k++)
+        {
+          idxik=i*n+k;
+          idxkj=k*n+j;
+          //sum -= a[i][k]*a[k][j]; 
+          sum -= a[idxik]*a[idxkj]; 
+        }
+      //a[i][j]=sum; 
+      a[idxij]=sum; 
     } 
     big=0.0; 
     //Initialize for the search for largest pivot element. 
     for (i=j;i<n;i++) { 
+      idxij=i*n+j;
       //This is i = j of equation (2.3.12) and i = j +1: ::N of equation (2.3.13). 
-      sum=a[i][j]; 
+      sum=a[idxij]; 
       for (k=0;k<j;k++)
-	sum -= a[i][k]*a[k][j]; 
-      a[i][j]=sum; 
+        {
+          idxik=i*n+k;
+          idxkj=k*n+j;
+          sum -= a[idxik]*a[idxkj]; 
+        }
+      a[idxij]=sum; 
       if ( (dum=vv[i]*fabs(sum)) >= big) { 
 	//Is the  gure of merit for the pivot better than the best so far? 
 	big=dum; imax=i; 
@@ -100,25 +114,29 @@ void ludcmp(float_tt **a, int n, int *indx, float_tt *d) {
       //Do we need to interchange rows? 
       for (k=0;k<n;k++) { 
 	//Yes, do so... 
-	dum=a[imax][k]; 
-	a[imax][k]=a[j][k]; 
-	a[j][k]=dum; 
+	dum=a[imax*n+k]; 
+	a[imax*n+k]=a[j*n+k]; 
+	a[j*n+k]=dum; 
       } 
       *d = -(*d); //...and change the parity of d. 
       vv[imax]=vv[j]; 
       // Also interchange the scale factor. 
     } 
     indx[j]=imax; 
-    if (a[j][j] == 0.0) 
-      a[j][j]=TINY; 
+    if (a[j*n+j] == 0.0) 
+      a[j*n+j]=TINY; 
     /*If the pivot element is zero the matrix is singular 
       (at least to the precision of the algorithm). 
       For some applications on singular matrices, it is 
       desirable to substitute TINY for zero. 
     */
     if (j != n-1) { // Now,  nally, divide by the pivot element. 
-      dum=1.0/(a[j][j]); 
-      for (i=j+1;i<n;i++) a[i][j] *= dum; 
+      dum=1.0/(a[j*n+j]); 
+      for (i=j+1;i<n;i++) 
+        {
+          idxij=i*n+j;
+          a[idxij] *= dum; 
+        }
     } 
   } 
   // Go back for the next column in the reduction. 
@@ -263,6 +281,8 @@ void inverse_3x3 (float_tt *res, const float_tt *a)
  * the matrix M will be preserved
  * The invMM matrix will be of size M X M
  */
+// 20140307: commenting, not used.
+/*
 float_tt **invMM(float_tt **Mmatrix, int N, int M) {
   static int Mold = 0; // Nold = 0, 
   static float_tt **invMMmatrix = NULL;
@@ -280,15 +300,16 @@ float_tt **invMM(float_tt **Mmatrix, int N, int M) {
   
   return invMMmatrix;
 }
+*/
+// Given a matrix a[1..m][1..n], this routine computes its singular value decomposition,
+//   A = U   W   V T . 
+//   The matrix U replaces a on output. The diagonal matrix of singular values 
+//   W is out- put as a vector w[1..n]. The matrix V (not the transpose V T ) is output
+//   as v[1..n][1..n].
+// MCS: commenting 20140307 - this really should be handled by some other library.
+/*
+void svdcmp1(float_tt *a, int m, int n, float_tt w[], float_tt **v) {
 
-
-void svdcmp1(float_tt **a, int m, int n, float_tt w[], float_tt **v) {
-  /* Given a matrix a[1..m][1..n], this routine computes its singular value decomposition,
-     A = U   W   V T . 
-     The matrix U replaces a on output. The diagonal matrix of singular values 
-     W is out- put as a vector w[1..n]. The matrix V (not the transpose V T ) is output
-     as v[1..n][1..n].
-  */
   // uses:  float_tt pythag(float_tt a, float_tt b); 
   int flag,i,its,j,jj,k,l=0,nm=0; 
   float_tt anorm,c,f,g,h,s,scale,x,y,z,*rv1; 
@@ -479,7 +500,7 @@ void svdcmp1(float_tt **a, int m, int n, float_tt w[], float_tt **v) {
   //  free_vector(rv1,1,n); 
   free(rv1);
 }
-
+*/
 
 float_tt pythag(float_tt a, float_tt b) {
   /* Computes (a 2 + b 2 ) 1=2 without destructive under ow or over ow.
@@ -529,12 +550,10 @@ void vectDiff_f(float *a, float_tt *b, float_tt *c,int revFlag) {
 
 
 
-void showMatrix(float_tt **M,int Nx, int Ny,char *name) {
-  int i,j;
-
+void showMatrix(float_tt *M,int Nx, int Ny,char *name) {
   printf("%s:\n",name);
-  for (i=0;i<Nx;i++) {
-    for (j=0;j<Ny;j++) printf("%10f ",M[i][j]);
+  for (int i=0;i<Nx;i++) {
+    for (int j=0;j<Ny;j++) printf("%10f ",M[i*Nx+j]);
     printf("\n");
   }
 }
@@ -755,27 +774,7 @@ float_tt vectLength(float_tt *vect) {
 }
 
 /* c = a*b */
-void matrixProduct(float_tt **a,int Nxa, int Nya, float_tt **b,int Nxb, int Nyb, float_tt **c) {
-  int i,j,k;
 
-  if (Nya != Nxb) {
-    printf("multiplyMatrix: Inner Matrix dimensions do not agree!\n");
-    return;
-  }
-
-  /*
-  for (i=0;i<Nxa;i++)
-    for (j=0;j<Nyb;j++) {
-      c[i][j] = 0.0;
-      for (k=0;k<Nya;k++)
-	c[i][j] += a[i][k]*b[k][j];
-    }
-  */
-  for (i=0;i<Nxa;i++) for (j=0;j<Nyb;j++) {
-      c[0][i*Nyb+j] = 0.0;
-      for (k=0;k<Nya;k++) c[0][i*Nyb+j] += a[0][i*Nya+k] * b[0][k*Nyb+j];
-    }
-}
 
 
 /* c = a*b */

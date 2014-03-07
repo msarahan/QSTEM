@@ -484,7 +484,7 @@ void CCrystal::TiltBoxed(int ncoord,bool handleVacancies) {
    * necessary to reach every corner of the supercell box.
    */
   // matrixProduct(a,1,3,Mminv,3,3,b);
-  MatrixProduct(Mminv,3,3,(float_tt **)&a[0],3,1,(float_tt **)&b[0]);
+  MatrixProduct(Mminv[0],3,3,(float_tt *)&a[0],3,1,(float_tt *)&b[0]);
   // showMatrix(Mm,3,3,"M");
   // showMatrix(Mminv,3,3,"M");
   unsigned nxmax, nymax, nzmax;
@@ -497,7 +497,7 @@ void CCrystal::TiltBoxed(int ncoord,bool handleVacancies) {
         a[2]=iz*m_cubez-dz;
 
         // matrixProduct(a,1,3,Mminv,3,3,b);
-        MatrixProduct(Mminv,3,3,(float_tt **)&a[0],3,1,(float_tt **)&b[0]);
+        MatrixProduct(Mminv[0],3,3,(float_tt *)&a[0],3,1,(float_tt *)&b[0]);
 
         if (nxmin > (int)floor(b[0])) nxmin=(int)floor(b[0]);
         if (nxmax < (int)ceil( b[0])) nxmax=(int)ceil( b[0]);
@@ -627,7 +627,7 @@ void CCrystal::TiltBoxed(int ncoord,bool handleVacancies) {
             exit(0);
           }
           // matrixProduct(aOrig,1,3,Mm,3,3,b);
-          MatrixProduct(Mm,3,3,(float_tt **)&aOrig[0],3,1,(float_tt **)&b[0]);
+          MatrixProduct(Mm[0],3,3,(float_tt *)&aOrig[0],3,1,(float_tt *)&b[0]);
           
           // if (atomCount < 2) {showMatrix(a,1,3,"a");showMatrix(b,1,3,"b");}
           // b now contains atom positions in cartesian coordinates */
@@ -640,7 +640,7 @@ void CCrystal::TiltBoxed(int ncoord,bool handleVacancies) {
               (y >= 0) && (y <= m_cubey) &&
               (z >= 0) && (z <= m_cubez)) {
             // matrixProduct(a,1,3,Mm,3,3,b);
-            MatrixProduct(Mm,3,3,(float_tt **)&a[0],3,1,(float_tt **)&b[0]);
+            MatrixProduct(Mm[0],3,3,(float_tt *)&a[0],3,1,(float_tt *)&b[0]);
             m_atoms[atomCount].x		= b[0]+dx; 
             m_atoms[atomCount].y		= b[1]+dy; 
             m_atoms[atomCount].z		= b[2]+dz; 
@@ -816,7 +816,7 @@ void CCrystal::EinsteinDisplacement(std::vector<float_tt>&u, atom &_atom)
      * coordinates so that we can add it to the current position in vector a
      */
     std::vector<float_tt> uf(3,0);
-    MatrixProduct((float_tt **)&u[0],1,3,m_MmInv,3,3,(float_tt **)&uf[0]);
+    MatrixProduct((float_tt *)&u[0],1,3,m_MmInv[0],3,3,(float_tt *)&uf[0]);
     memcpy(&u[0],&uf[0],3*sizeof(float_tt));
 }
 
@@ -1097,14 +1097,9 @@ void CCrystal::RotateVect(float_tt *vectIn,float_tt *vectOut, float_tt phi_x, fl
   return rotateVect(vectIn, vectOut, phi_x, phi_y, phi_z);
 }
 
-void CCrystal::MatrixProduct(float_tt **a,int Nxa, int Nya, float_tt **b,int Nxb, int Nyb, float_tt **c)
+void CCrystal::MatrixProduct(float_tt *a,int Nxa, int Nya, float_tt *b,int Nxb, int Nyb, float_tt *c)
 {
   return matrixProduct(a, Nxa, Nya, b, Nxb, Nyb, c);
-}
-
-void CCrystal::MatrixProduct(float_tt **a,int Nxa, int Nya, float_tt **b,int Nxb, int Nyb, float_tt *c)
-{
-  return matrixProduct(a, Nxa, Nya, b, Nxb, Nyb, &c);
 }
 
 void CCrystal::RotateMatrix(float_tt *matrixIn,float_tt *matrixOut, float_tt phi_x, float_tt phi_y, float_tt phi_z)

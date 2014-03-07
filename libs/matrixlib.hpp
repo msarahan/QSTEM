@@ -28,14 +28,14 @@ QSTEM - image simulation for TEM/STEM/CBED
 namespace QSTEM
 {
 
-void ludcmp(float_tt **a, int n, int *indx, float_tt *d);
-void lubksb(float_tt **a, int n, int *indx, float_tt b[]);
+void ludcmp(float_tt *a, int n, int *indx, float_tt *d);
+void lubksb(float_tt *a, int n, int *indx, float_tt b[]);
 float_tt det_3x3 (const float_tt *mat);
 void inverse_3x3 (float_tt *res, const float_tt *a);
 void trans_3x3 (float_tt *Mt, const float_tt *Ms);
 
 // svdcmp1 uses the NR unit-offset vectors :-(
-void svdcmp1(float_tt **a, int m, int n, float_tt w[], float_tt **v);
+void svdcmp1(float_tt *a, int m, int n, float_tt w[], float_tt *v);
 float_tt pythag(float_tt a, float_tt b);
 
 /* vector functions:
@@ -43,7 +43,7 @@ float_tt pythag(float_tt a, float_tt b);
 void crossProduct(const float_tt *a, const float_tt *b, float_tt *c);
 float_tt dotProduct(const float_tt *a, const float_tt *b);
 float_tt findLambda(plane *p, float *point, int revFlag);
-void showMatrix(float_tt **M,int Nx, int Ny,char *name);
+void showMatrix(float_tt *M,int Nx, int Ny,char *name);
 void vectDiff_f(float *a, float_tt *b, float_tt *c,int revFlag);
 float_tt vectLength(float_tt *vect);
 void makeCellVect(grainBox *grain, float_tt *vax, float_tt *vby, float_tt *vcz);
@@ -54,9 +54,22 @@ void rotateMatrix(float_tt *matrixIn,float_tt *matrixOut, float_tt phi_x, float_
 /* |vect| */
 float_tt vectLength(float_tt *vect);
 
-/* c = a*b */
-void matrixProduct(float_tt **a,int Nxa, int Nya, float_tt **b,int Nxb, int Nyb, float_tt **c);
-void matrixProductInt(float_tt **a,int Nxa, int Nya, int **b,int Nxb, int Nyb, float_tt **c);
+  /* c = a*b */
+  template <typename T>
+  void matrixProduct(T *a,int Nxa, int Nya, T *b,int Nxb, int Nyb, T *c) {
+    int i,j,k;
+
+    if (Nya != Nxb) {
+      printf("multiplyMatrix: Inner Matrix dimensions do not agree!\n");
+      return;
+    }
+
+    for (i=0;i<Nxa;i++) for (j=0;j<Nyb;j++) {
+      c[i*Nyb+j] = 0.0;
+      for (k=0;k<Nya;k++) c[i*Nyb+j] += a[i*Nya+k] * b[k*Nyb+j];
+    }
+}
+
 
 } // end namespace QSTEM
 

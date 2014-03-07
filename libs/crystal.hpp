@@ -118,8 +118,7 @@ protected:
 
   void Inverse_3x3 (float_tt *res, const float_tt *a);
   void RotateVect(float_tt *vectIn,float_tt *vectOut, float_tt phi_x, float_tt phi_y, float_tt phi_z);
-  void MatrixProduct(float_tt **a,int Nxa, int Nya, float_tt **b,int Nxb, int Nyb, float_tt **c);
-  void MatrixProduct(float_tt **a,int Nxa, int Nya, float_tt **b,int Nxb, int Nyb, float_tt *c);
+  void MatrixProduct(float_tt *a,int Nxa, int Nya, float_tt *b,int Nxb, int Nyb, float_tt *c);
   void RotateMatrix(float_tt *matrixIn,float_tt *matrixOut, float_tt phi_x, float_tt phi_y, float_tt phi_z);
 
   static int AtomCompareZnum(const void *atPtr1,const void *atPtr2);
