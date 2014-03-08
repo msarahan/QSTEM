@@ -18,8 +18,7 @@
 */
 #define BOOST_TEST_MODULE Test3DPotential
 #include <boost/test/unit_test.hpp>
-#include <boost/filesystem.hpp>
-#include <iostream>
+#include "boost_collection_close.hpp"
 
 #include "potentials/pot_factory.hpp"
 
@@ -41,11 +40,6 @@ BOOST_FIXTURE_TEST_SUITE(TestPotential3D, PotFixture)
 
 BOOST_AUTO_TEST_CASE(TestAtomBoxGeneration)
 {
-	unsigned Z=8;
-	// maybe an OK Debye-Waller factor for STO from
-	// http://arxiv.org/ftp/arxiv/papers/0707/0707.0655.pdf
-	float_tt B=0.063;
-
 	// Calculation stores the potential as private member variable m_atomPot (map of atomic number to generated ComplexVector)
 	//pot->GetAtomPotential3D();
 }

@@ -18,6 +18,7 @@
 */
 #define BOOST_TEST_MODULE Test2DFFTPotential
 #include <boost/test/unit_test.hpp>
+#include "boost_collection_close.hpp"
 
 #include "potentials/pot_factory.hpp"
 
