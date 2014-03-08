@@ -16,10 +16,8 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#define BOOST_TEST_MODULE Test3DFFTPotential
+#define BOOST_TEST_MODULE Test2DFFTPotential
 #include <boost/test/unit_test.hpp>
-#include <boost/filesystem.hpp>
-#include <iostream>
 
 #include "potentials/pot_factory.hpp"
 
@@ -28,7 +26,7 @@ using namespace QSTEM;
 struct PotFixture {
   PotFixture()
   {
-    pot = CPotFactory::Get()->GetPotential(POTENTIAL3D, POTENTIALFFT);
+    pot = CPotFactory::Get()->GetPotential(POTENTIAL2D, POTENTIALFFT);
     //std::cout << "setup qsc config reader fixture" << std::endl; 
   }
   ~PotFixture()
@@ -37,17 +35,11 @@ struct PotFixture {
   PotPtr pot;
 };
 
-BOOST_FIXTURE_TEST_SUITE(TestPotential3DFFT, PotFixture)
+BOOST_FIXTURE_TEST_SUITE(TestPotential2DFFT, PotFixture)
 
-BOOST_AUTO_TEST_CASE(TestAtomBoxGeneration)
+BOOST_AUTO_TEST_CASE( test_case )
 {
-	unsigned Z=8;
-	// maybe an OK Debye-Waller factor for STO from
-	// http://arxiv.org/ftp/arxiv/papers/0707/0707.0655.pdf
-	float_tt B=0.063;
-
-	// Calculation stores the potential as private member variable m_atomPot (map of atomic number to generated ComplexVector)
-	//pot->GetAtomPotential3D();
+  
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -18,5 +18,28 @@
 */
 #define BOOST_TEST_MODULE Test2DPotential
 #include <boost/test/unit_test.hpp>
-#include <boost/filesystem.hpp>
-#include <iostream>
+
+#include "potentials/pot_factory.hpp"
+
+using namespace QSTEM;
+
+struct PotFixture {
+  PotFixture()
+  {
+    pot = CPotFactory::Get()->GetPotential(POTENTIAL2D, POTENTIALREALSPACE);
+    //std::cout << "setup qsc config reader fixture" << std::endl; 
+  }
+  ~PotFixture()
+  { //std::cout << "teardown qsc config reader fixture" << std::endl;
+  }
+  PotPtr pot;
+};
+
+BOOST_FIXTURE_TEST_SUITE(TestPotential2D, PotFixture)
+
+BOOST_AUTO_TEST_CASE( test_case )
+{
+
+}
+
+BOOST_AUTO_TEST_SUITE_END()

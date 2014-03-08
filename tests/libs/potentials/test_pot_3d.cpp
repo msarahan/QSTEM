@@ -16,7 +16,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#define BOOST_TEST_MODULE Test3DFFTPotential
+#define BOOST_TEST_MODULE Test3DPotential
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
 #include <iostream>
@@ -28,7 +28,7 @@ using namespace QSTEM;
 struct PotFixture {
   PotFixture()
   {
-    pot = CPotFactory::Get()->GetPotential(POTENTIAL3D, POTENTIALFFT);
+    pot = CPotFactory::Get()->GetPotential(POTENTIAL3D, POTENTIALREALSPACE);
     //std::cout << "setup qsc config reader fixture" << std::endl; 
   }
   ~PotFixture()
@@ -37,7 +37,7 @@ struct PotFixture {
   PotPtr pot;
 };
 
-BOOST_FIXTURE_TEST_SUITE(TestPotential3DFFT, PotFixture)
+BOOST_FIXTURE_TEST_SUITE(TestPotential3D, PotFixture)
 
 BOOST_AUTO_TEST_CASE(TestAtomBoxGeneration)
 {

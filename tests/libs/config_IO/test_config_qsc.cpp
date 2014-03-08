@@ -224,10 +224,11 @@ BOOST_AUTO_TEST_CASE( testPotOutputParams )
 
 BOOST_AUTO_TEST_CASE( testPotCalcParams )
 {
-  bool _3D, fft;
-  configReader->ReadPotentialCalculationParameters(fft, _3D);
-  BOOST_CHECK_EQUAL(_3D, true);
-  BOOST_CHECK_EQUAL(fft, true);
+  PotentialDimension d;
+  PotentialSpace s;
+  configReader->ReadPotentialCalculationParameters(d, s);
+  BOOST_CHECK_EQUAL(d, POTENTIAL3D);
+  BOOST_CHECK_EQUAL(s, POTENTIALFFT);
 }
 
 BOOST_AUTO_TEST_CASE( testAtomRadius )

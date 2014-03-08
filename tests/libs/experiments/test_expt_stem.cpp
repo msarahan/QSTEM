@@ -20,3 +20,29 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
 #include <iostream>
+
+#include "experiments.hpp"
+
+using namespace QSTEM;
+
+struct ExperimentFixture {
+  ExperimentFixture()
+  {    
+   configReader = CConfigReaderFactory::Get()->GetReader("stem_STO_4x4.qsc");
+   expt = GetExperiment(configReader);
+  }
+  ~ExperimentFixture()
+  { 
+  }
+  ConfigReaderPtr configReader;
+  ExperimentPtr expt;
+};
+
+BOOST_FIXTURE_TEST_SUITE(TestExperimentSTEM, ExperimentFixture)
+
+BOOST_AUTO_TEST_CASE( test_case )
+{
+  
+}
+
+BOOST_AUTO_TEST_SUITE_END()

@@ -45,7 +45,10 @@ struct PlaneWaveFixture {
 BOOST_FIXTURE_TEST_SUITE (TestPlaneWave, PlaneWaveFixture)
 
 // Test probe calculation (parallel beam)
-
+BOOST_AUTO_TEST_CASE( test_case )
+{
+  
+}
 
 
 

@@ -66,14 +66,15 @@ BOOST_AUTO_TEST_CASE( testReadAtoms )
   BOOST_CHECK_CLOSE(atoms[0].mass, 76, 0.05);
   BOOST_CHECK_EQUAL(atoms[0].Znum, 38);
   // make sure second atom is read correctly - if it is, then the loop over atoms is behaving OK.
-  BOOST_CHECK_CLOSE(atoms[1].x, 0.5, 0.05);
-  BOOST_CHECK_CLOSE(atoms[1].y, 0.5, 0.05);
-  BOOST_CHECK_CLOSE(atoms[1].z, 0.5, 0.05);
-  BOOST_CHECK_CLOSE(atoms[1].dw, 0.4390, 0.05);  
-  BOOST_CHECK_CLOSE(atoms[1].occ, 1.0, 0.05);
-  BOOST_CHECK_CLOSE(atoms[1].q, 4.0, 0.05);
-  BOOST_CHECK_CLOSE(atoms[1].mass, 44, 0.05);
-  BOOST_CHECK_EQUAL(atoms[1].Znum, 22);
+  BOOST_CHECK_CLOSE(atoms[4].x, 0.5, 0.05);
+  BOOST_CHECK_CLOSE(atoms[4].y, 0.5, 0.05);
+  BOOST_CHECK_CLOSE(atoms[4].z, 0, 0.05);
+  BOOST_CHECK_CLOSE(atoms[4].dw, 0.7323, 0.05);  
+  BOOST_CHECK_CLOSE(atoms[4].occ, 1.0, 0.05);
+  BOOST_CHECK_CLOSE(atoms[4].q, -2.0, 0.05);
+  BOOST_CHECK_CLOSE(atoms[4].mass, 16, 0.05);
+  BOOST_CHECK_EQUAL(atoms[4].Znum, 8);
+  
 }
 
 BOOST_AUTO_TEST_SUITE_END()
