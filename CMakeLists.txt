@@ -20,7 +20,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-find_package(Boost REQUIRED)					
+find_package(Boost 1.49.0 REQUIRED)					
 find_package(fftw3 REQUIRED)
 
 set (M_LIB "")
