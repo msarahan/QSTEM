@@ -75,6 +75,8 @@ BOOST_AUTO_TEST_CASE(testSetPosition)
 
 BOOST_AUTO_TEST_CASE( testReadWave )
 {
+  // TODO: this establishes the array size and initializes the data IO.  Should we make it easier to initialize the object with the configReader?
+  wave=WavePtr(new CPlaneWave(configReader));
   // our reference data is mulswav_16_2.img
   wave->ReadWave(16, 2);
 }

@@ -81,8 +81,9 @@ void CImageIO::ReadImage(ComplexVector &pix, std::string &fileName, std::map<std
   m_imageReader->ReadElementByteSize(fileName, position, byteSize);
   m_imageReader->ReadSize(fileName, position, nx, ny);
   assert(complex);
-  assert(byteSize == sizeof(float_tt));
-	assert(pix.size() == nx*ny);
+  // TODO: need to figure out proper type check/conversion for image import (Should be able to import float images into double containers, for example)
+  //assert(byteSize == sizeof(float_tt));
+  assert(pix.size() == nx*ny);
   m_imageReader->ReadImage(fileName, pix, params, comment);
 }
 

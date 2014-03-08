@@ -422,12 +422,12 @@ void CCrystal::TiltCell(float_tt tilt_x, float_tt tilt_y, float_tt tilt_z)
 // Uses m_Mm to calculate ax, by, cz, and alpha, beta, gamma
 void CCrystal::CalculateCellDimensions()
 {
-  m_ax = sqrt(m_Mm[0][0]*m_Mm[0][0]+m_Mm[0][1]*m_Mm[0][1]+m_Mm[0][2]*m_Mm[0][2]);
-  m_by = sqrt(m_Mm[1][0]*m_Mm[1][0]+m_Mm[1][1]*m_Mm[1][1]+m_Mm[1][2]*m_Mm[1][2]);
-  m_cz = sqrt(m_Mm[2][0]*m_Mm[2][0]+m_Mm[2][1]*m_Mm[2][1]+m_Mm[2][2]*m_Mm[2][2]);
+  m_cellAx = sqrt(m_Mm[0]*m_Mm[0]+m_Mm[1]*m_Mm[1]+m_Mm[2]*m_Mm[2]);
+  m_cellBy = sqrt(m_Mm[3]*m_Mm[3]+m_Mm[4]*m_Mm[4]+m_Mm[5]*m_Mm[5]);
+  m_cellCz = sqrt(m_Mm[6]*m_Mm[6]+m_Mm[7]*m_Mm[7]+m_Mm[8]*m_Mm[8]);
   m_cGamma = atan2(m_Mm[4],m_Mm[3]);
-  m_cBeta = acos(m_Mm[2][0]/m_cz);
-  m_cAlpha = acos(m_Mm[2][1]*sin(m_cGamma)/m_cz+cos(m_cBeta)*cos(m_cGamma));
+  m_cBeta = acos(m_Mm[6]/m_cellCz);
+  m_cAlpha = acos(m_Mm[7]*sin(m_cGamma)/m_cellCz+cos(m_cBeta)*cos(m_cGamma));
   m_cGamma /= (float)PI180;
   m_cBeta  /= (float)PI180;
   m_cAlpha /= (float)PI180;
@@ -437,16 +437,15 @@ void CCrystal::CalculateCellDimensions()
 
 void CCrystal::ConvertCoordinates(CCrystal::CoordinateType coord_type)
 {
-	float_tt **Mm;
-	std::vector<double> tmp_vec, transformed_vec;
+	RealVector Mm(9,0);
+	RealVector tmp_vec, transformed_vec;
 	if (coord_type==m_coordinateSpace)
 		return;
 	if (coord_type==CARTESIAN)
 		Mm = m_Mm;
 	else
 	{
-		Mm = float2D(3,3,"Mm");
-		Inverse_3x3(Mm[0], m_Mm[0]);
+		Inverse_3x3(Mm, m_Mm);
 	}
 
 	// TODO: Is it worthwhile to create these two vectors, for the sake of speed?  or better to save memory?
@@ -461,7 +460,7 @@ void CCrystal::ConvertCoordinates(CCrystal::CoordinateType coord_type)
 		tmp_vec[i*3+2]=m_atoms[i].z;
 	}
 	// matrix product of cell matrix with coordinates
-	MatrixProduct(Mm,3,3,(float_tt **)&tmp_vec[0],3,m_atoms.size(),(float_tt **)&transformed_vec[0]);
+	MatrixProduct(Mm,3,3,tmp_vec,3,m_atoms.size(),transformed_vec);
 	// place transformed coordinates in atoms vector
 	for (size_t i=0; i<m_atoms.size(); i++)
 	{
