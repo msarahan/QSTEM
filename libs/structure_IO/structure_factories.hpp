@@ -60,7 +60,7 @@ public:
 
   void Register(const std::string &extension, CreateStructureWriterFn pfnCreate);
   // Looks up which reader to get based on string mapping of registered readers
-  StructureWriterPtr GetWriter(const boost::filesystem::path &filename, float_tt ax, float_tt by, float_tt cz);
+  StructureWriterPtr GetWriter(const boost::filesystem::path &filename);
 
 private:
   CStructureWriterFactory();

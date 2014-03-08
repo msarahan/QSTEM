@@ -84,7 +84,7 @@ struct cfgWriterFixture {
   cfgWriterFixture()
   {
     boost::filesystem::path cfgFile="SrTiO3_test_write.cfg";
-    writer = CStructureWriterFactory::Get()->GetWriter(cfgFile,3.905, 3.905, 3.905);
+    writer = CStructureWriterFactory::Get()->GetWriter(cfgFile);
     //std::cout << "setup qsc config reader fixture" << std::endl; 
   }
   ~cfgWriterFixture()
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE( testWriteCfg )
   atoms[2] = atom(16, "O", 0*a, 0.5*b, 0.5*c, 0.7323, 1.0, -2.0);
   atoms[3] = atom(16, "O", 0.5*a, 0*b, 0.5*c, 0.7323, 1.0, -2.0);
   atoms[4] = atom(16, "O", 0.5*a, 0.5*b, 0*c, 0.7323, 1.0, -2.0);
-  writer->Write(atoms,"1");
+  writer->Write(atoms,"1", a, b, c, 90, 90, 90);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

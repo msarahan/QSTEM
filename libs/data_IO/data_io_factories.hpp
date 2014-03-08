@@ -22,7 +22,7 @@ public:
 
   void Register(const std::string &extension, CreateDataReaderFn pfnCreate);
   // Looks up which reader to get based on string mapping of registered readers
-  DataReaderPtr GetReader(const std::string &animalName);
+  DataReaderPtr GetReader(const std::string &filename);
 
 private:
   CDataReaderFactory();
@@ -48,7 +48,7 @@ public:
 
   void Register(const std::string &extension, CreateDataWriterFn pfnCreate);
   // Looks up which reader to get based on string mapping of registered readers
-  DataWriterPtr GetWriter(const std::string &animalName);
+  DataWriterPtr GetWriter(const std::string &filename);
 
 private:
   CDataWriterFactory();

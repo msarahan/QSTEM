@@ -52,7 +52,7 @@ public:
 
     void Register(const std::string &potentialName, CreatePotentialFn pfnCreate);
     // Looks up which potential to get based on string mapping of registered potentials
-    PotPtr GetPotential(const std::string &animalName);
+  PotPtr GetPotential(const std::string &potentialName);
     // ultimately uses the string based method, but builds the string based on the standard 2d/3d fft/real-space options
     PotPtr GetPotential(PotentialDimension d, PotentialSpace s);
     // ultimately uses the string-based method, but parses the config reader for you to make that string.  

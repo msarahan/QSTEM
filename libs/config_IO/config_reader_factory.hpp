@@ -42,7 +42,7 @@ public:
 
   void Register(const std::string &extension, CreateReaderFn pfnCreate);
   // Looks up which reader to get based on string mapping of registered readers
-  ConfigReaderPtr GetReader(const std::string &animalName);
+  ConfigReaderPtr GetReader(const std::string &filename);
 
 private:
   CConfigReaderFactory();

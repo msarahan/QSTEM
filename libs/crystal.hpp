@@ -32,6 +32,11 @@ namespace QSTEM
   
 class QSTEM_HELPER_DLL_EXPORT CCrystal
 {
+private:
+  enum CoordinateType
+  {
+	  FRACTIONAL, CARTESIAN
+  };
 public:
   CCrystal();  // default constructor: does nothing, so you have to add stuff to it after constructing.
   CCrystal(ConfigReaderPtr &configReader);
@@ -58,10 +63,13 @@ public:
 
   void DisplaceAtoms();
 
-  float_tt GetCZ(){return m_cz;}
+  void ConvertCoordinates(CoordinateType coord_type);
+
+  float_tt GetCZ(){return m_superCz;}
   bool GetTDS(){return m_tds;}
   void GetCellAngles(float_tt &alpha, float_tt &beta, float_tt &gamma);
-  void GetCellParameters(float_tt &ax, float_tt &by, float_tt &cz);
+  void GetUnitCellParameters(float_tt &ax, float_tt &by, float_tt &cz);
+  void GetSuperCellParameters(float_tt &ax, float_tt &by, float_tt &cz);
   //inline unsigned GetZnum(unsigned idx){return m_Znums[idx];}
   //inline std::vector<unsigned> GetAtomTypes(){return m_Znums;}
   inline unsigned GetNumberOfAtomTypes(){return m_u2.size();}
@@ -83,13 +91,16 @@ protected:
                                           coordinates to physical cartesian coordinates.  */
   RealVector m_MmInv;                  /* inverse of metric matrix.  Used to go from physical, cartesian coordinates
                                           back to fractional coordinates. */
-  float_tt m_ax, m_by, m_cz;           /* lattice parameters */
+  float_tt m_superAx, m_superBy, m_superCz;           /* supercell lattice parameters */
+  float_tt m_cellAx, m_cellBy, m_cellCz;           /* lattice param	eters */
   float_tt m_cAlpha, m_cBeta, m_cGamma;
   float_tt m_cubex, m_cubey, m_cubez;  /* dimension of crystal cube, if zero, then nx,ny,nz *
   //					 * will be used */
   float_tt m_maxX, m_minX;
   float_tt m_maxY, m_minY;
   float_tt m_maxZ, m_minZ;
+
+  CoordinateType m_coordinateSpace;
 
   bool m_adjustCubeSize;  
   float_tt m_offsetX, m_offsetY;

@@ -43,13 +43,13 @@ public:
 
 class IStructureWriter;
 typedef boost::shared_ptr<IStructureWriter> StructureWriterPtr;
-typedef StructureWriterPtr (*CreateStructureWriterFn)(const boost::filesystem::path &filename, 
-                                                      float_tt ax, float_tt by, float_tt cz);
+typedef StructureWriterPtr (*CreateStructureWriterFn)(const boost::filesystem::path &filename);
 
 class IStructureWriter
 {
 public:
-  virtual int Write(std::vector<atom> &atoms, std::string run_id)=0;
+  virtual int Write(std::vector<atom> &atoms, std::string run_id, float_tt ax, float_tt by, float_tt cz, 
+	  float_tt alpha, float_tt beta, float_tt gamma)=0;
 };
 
 /*--------------------- ReadLine() -----------------------*/
