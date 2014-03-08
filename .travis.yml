@@ -3,8 +3,9 @@ script: cmake
 compiler: gcc 
 
 before_install:
+  - sudo add-apt-repository -y ppa:boost-latest/ppa
   - sudo apt-get update -qq
-  - sudo apt-get install -qq libfftw3-dev libboost1.48-dev libboost-filesystem1.48-dev libboost-test1.48-dev libboost-random1.48-dev libhdf5-serial-dev
+  - sudo apt-get install -qq libfftw3-dev libboost1.55-dev libboost-filesystem1.55-dev libboost-test1.55-dev libboost-random1.55-dev libhdf5-serial-dev
   - sudo pip install cpp-coveralls --use-mirrors
 
 before_script:
