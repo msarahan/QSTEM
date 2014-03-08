@@ -66,7 +66,7 @@ public:
   virtual void ReadLoadPotential(bool &loadPotential, boost::filesystem::path &filename)=0;
   virtual void ReadPotentialOutputParameters(bool &savePotential, bool &saveProjectedPotential, 
                                              bool &plotPotential)=0;
-  virtual void ReadPotentialCalculationParameters(bool &fftPotential, bool &potential3D)=0;
+  virtual void ReadPotentialCalculationParameters(PotentialDimension &d, PotentialSpace &s)=0;
   virtual void ReadAtomRadius(float_tt &radius)=0;
   virtual void ReadStructureFactorType(std::string &type)=0;
   virtual void ReadPendelloesungParameters(std::vector<int> &hbeams, std::vector<int> &kbeams,

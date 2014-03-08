@@ -58,7 +58,7 @@ public:
   void ReadLoadPotential(bool &loadPotential, boost::filesystem::path &filename);
   void ReadPotentialOutputParameters(bool &savePotential, bool &saveProjectedPotential, 
                                              bool &plotPotential);
-  void ReadPotentialCalculationParameters(bool &fftPotential, bool &potential3D);
+  void ReadPotentialCalculationParameters(PotentialDimension &d, PotentialSpace &s);
   void ReadAverageParameters(unsigned &avgRuns, bool &storeSeries);
   void ReadScanParameters(float_tt &scanXStart, float_tt &scanXStop, unsigned &scanXN,
                                   float_tt &scanYStart, float_tt &scanYStop, unsigned &scanYN);  

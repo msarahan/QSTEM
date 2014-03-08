@@ -299,13 +299,13 @@ void CQscReader::ReadPotentialOutputParameters(bool &savePotential, bool &saveTo
   }  
 }
 
-void CQscReader::ReadPotentialCalculationParameters(bool &fftPotential, bool &potential3D)
+void CQscReader::ReadPotentialCalculationParameters(PotentialDimension &d, PotentialSpace &s)
 {
   if (readparam(m_fp, "one time integration:",m_buf,1)) {
-    fftPotential = IsBufferYes(m_buf);
+    s = IsBufferYes(m_buf) ? POTENTIALFFT : POTENTIALREALSPACE;
   }
   if (readparam(m_fp, "potential3D:",m_buf,1)) {
-    potential3D = IsBufferYes(m_buf);
+    d = IsBufferYes(m_buf) ? POTENTIAL3D : POTENTIAL2D;
   }
 }
 

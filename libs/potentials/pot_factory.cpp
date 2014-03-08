@@ -30,40 +30,40 @@ namespace QSTEM
 
 CPotFactory::CPotFactory()
 {
-	Register("2D",    &C2DPotential::Create);
-	Register("2DFFT", &C2DFFTPotential::Create);
-	Register("3D",    &C3DPotential::Create);
-	Register("3DFFT", &C3DFFTPotential::Create);
+  Register("2D",    &C2DPotential::Create);
+  Register("2DFFT", &C2DFFTPotential::Create);
+  Register("3D",    &C3DPotential::Create);
+  Register("3DFFT", &C3DFFTPotential::Create);
 }
 
 void CPotFactory::Register(const std::string &potName, CreatePotentialFn pfnCreate)
 {
-	m_FactoryMap[potName] = pfnCreate;
+  m_FactoryMap[potName] = pfnCreate;
 }
 
 PotPtr CPotFactory::GetPotential(const std::string &name)
 {
-	FactoryMap::iterator it = m_FactoryMap.find(name);
-	if( it != m_FactoryMap.end() )
-		return it->second();
-	return PotPtr();
+  FactoryMap::iterator it = m_FactoryMap.find(name);
+  if( it != m_FactoryMap.end() )
+    return it->second();
+  return PotPtr();
 }
 
-PotPtr CPotFactory::GetPotential(bool _3D, bool fft)
+PotPtr CPotFactory::GetPotential(PotentialDimension d, PotentialSpace s)
 {
-	std::stringstream str;
-	str << _3D ? "3D" : "2D";
-	str << fft ? "FFT" : "";
-	str << std::ends;
-	return GetPotential(str.str());
+  std::stringstream str;
+  str << (d==POTENTIAL3D) ? "3D" : "2D";
+  str << (s==POTENTIALFFT) ? "FFT" : "";
+  str << std::ends;
+  return GetPotential(str.str());
 }
-
 
 PotPtr CPotFactory::GetPotential(const ConfigReaderPtr &configReader)
 {
-  bool _3D, fft;
-  configReader->ReadPotentialCalculationParameters(fft, _3D);
-  PotPtr pot=GetPotential(_3D, fft);
+  PotentialDimension d;
+  PotentialSpace s;
+  configReader->ReadPotentialCalculationParameters(d, s);
+  PotPtr pot=GetPotential(d, s);
   pot->Initialize(configReader);
 
   return pot;
