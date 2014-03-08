@@ -47,29 +47,31 @@ CCfgReader::~CCfgReader()
 * The following function returns the number of atoms in the specified
 * CFG file and updates the cell parameters in the muls struct
 ***********************************************************************/
-int CCfgReader::ReadCellParams(float_tt **Mm) {
+int CCfgReader::ReadCellParams(RealVector &Mm) {
   int i;
   double lengthScale;
+
+  Mm.resize(9);
 
   resetParamFile(m_fp);  
   setComment('#');  
   if (readparam(m_fp, "A =",m_buf,1)) lengthScale=atof(m_buf.c_str());
 
-  if (readparam(m_fp, "H0(1,1) =",m_buf,1)) Mm[0][0] = atof(m_buf.c_str());
-  if (readparam(m_fp, "H0(1,2) =",m_buf,1)) Mm[0][1] = atof(m_buf.c_str());
-  if (readparam(m_fp, "H0(1,3) =",m_buf,1)) Mm[0][2] = atof(m_buf.c_str());
+  if (readparam(m_fp, "H0(1,1) =",m_buf,1)) Mm[0] = atof(m_buf.c_str());
+  if (readparam(m_fp, "H0(1,2) =",m_buf,1)) Mm[1] = atof(m_buf.c_str());
+  if (readparam(m_fp, "H0(1,3) =",m_buf,1)) Mm[2] = atof(m_buf.c_str());
 
-  if (readparam(m_fp, "H0(2,1) =",m_buf,1)) Mm[0][3] = atof(m_buf.c_str());
-  if (readparam(m_fp, "H0(2,2) =",m_buf,1)) Mm[0][4] = atof(m_buf.c_str());
-  if (readparam(m_fp, "H0(2,3) =",m_buf,1)) Mm[0][5] = atof(m_buf.c_str());
+  if (readparam(m_fp, "H0(2,1) =",m_buf,1)) Mm[3] = atof(m_buf.c_str());
+  if (readparam(m_fp, "H0(2,2) =",m_buf,1)) Mm[4] = atof(m_buf.c_str());
+  if (readparam(m_fp, "H0(2,3) =",m_buf,1)) Mm[5] = atof(m_buf.c_str());
 
-  if (readparam(m_fp, "H0(3,1) =",m_buf,1)) Mm[0][6] = atof(m_buf.c_str());
-  if (readparam(m_fp, "H0(3,2) =",m_buf,1)) Mm[0][7] = atof(m_buf.c_str());
-  if (readparam(m_fp, "H0(3,3) =",m_buf,1)) Mm[0][8] = atof(m_buf.c_str());
+  if (readparam(m_fp, "H0(3,1) =",m_buf,1)) Mm[6] = atof(m_buf.c_str());
+  if (readparam(m_fp, "H0(3,2) =",m_buf,1)) Mm[7] = atof(m_buf.c_str());
+  if (readparam(m_fp, "H0(3,3) =",m_buf,1)) Mm[8] = atof(m_buf.c_str());
 
   setComment('%');
   
-  for (i=0;i<9;i++) Mm[0][i] *= lengthScale;
+  for (i=0;i<9;i++) Mm[i] *= lengthScale;
 
   return 0;
 }

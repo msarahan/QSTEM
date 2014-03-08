@@ -42,9 +42,10 @@ public:
   
   void Init(unsigned run_number);
   void ReadUnitCell(bool handleVacancies);
+  void TiltCell(float_tt tilt_x, float_tt tilt_y, float_tt tilt_z);
   void TiltBoxed(int ncoord,bool handleVacancies);
-  void EinsteinDisplacement(std::vector<float_tt> &u, atom &_atom);
-  void PhononDisplacement(std::vector<float_tt> &u,int id,int icx,int icy,
+  void EinsteinDisplacement(RealVector &u, atom &_atom);
+  void PhononDisplacement(RealVector &u,int id,int icx,int icy,
                           int icz,atom &atom,bool printReport);
   void ReplicateUnitCell(int handleVacancies);
   void WriteStructure(unsigned run_number);
@@ -67,7 +68,7 @@ public:
   inline std::map<unsigned, float_tt> GetU2(){return m_u2;}
   inline float_tt GetU2(unsigned znum){return m_u2[znum];}
   inline float_tt GetU2avg(unsigned znum){return m_u2[znum]/m_u2Count[znum];} //returns Mean Squared displacement
-  inline void GetAtom(unsigned idx, atom &_atom){_atom=m_atoms[idx];}
+  inline const atom &GetAtom(unsigned idx){return m_atoms[idx];}
   inline unsigned GetNumberOfCellAtoms(){return m_baseAtoms.size();}
   inline unsigned GetNumberOfAtoms(){return m_atoms.size();}
   void CalculateCrystalBoundaries();
@@ -78,9 +79,9 @@ protected:
 
   std::vector<atom> m_atoms; // The atoms after duplication, tilt, and phonon shaking
   std::vector<atom> m_baseAtoms; // The atoms read directly from the input file (no alteration)
-  float_tt **m_Mm;                     /* metric matrix Mm(ax,by,cz,alpha,beta,gamma).  Used to go from fractional
+  RealVector m_Mm;                     /* metric matrix Mm(ax,by,cz,alpha,beta,gamma).  Used to go from fractional
                                           coordinates to physical cartesian coordinates.  */
-  float_tt **m_MmInv;                  /* inverse of metric matrix.  Used to go from physical, cartesian coordinates
+  RealVector m_MmInv;                  /* inverse of metric matrix.  Used to go from physical, cartesian coordinates
                                           back to fractional coordinates. */
   float_tt m_ax, m_by, m_cz;           /* lattice parameters */
   float_tt m_cAlpha, m_cBeta, m_cGamma;
@@ -116,10 +117,10 @@ protected:
 
   void OffsetCenter(atom &center);
 
-  void Inverse_3x3 (float_tt *res, const float_tt *a);
-  void RotateVect(float_tt *vectIn,float_tt *vectOut, float_tt phi_x, float_tt phi_y, float_tt phi_z);
-  void MatrixProduct(float_tt *a,int Nxa, int Nya, float_tt *b,int Nxb, int Nyb, float_tt *c);
-  void RotateMatrix(float_tt *matrixIn,float_tt *matrixOut, float_tt phi_x, float_tt phi_y, float_tt phi_z);
+  void Inverse_3x3 (RealVector &res, const RealVector &a);
+  void RotateVect(const RealVector &vectIn, RealVector &vectOut, float_tt phi_x, float_tt phi_y, float_tt phi_z);
+  void MatrixProduct(const RealVector &a,int Nxa, int Nya, const RealVector &b,int Nxb, int Nyb, RealVector &c);
+  void RotateMatrix(const RealVector &matrixIn, RealVector &matrixOut, float_tt phi_x, float_tt phi_y, float_tt phi_z);
 
   static int AtomCompareZnum(const void *atPtr1,const void *atPtr2);
   static int AtomCompareZYX(const void *atPtr1,const void *atPtr2);

@@ -30,7 +30,7 @@ public:
   CCfgReader(const boost::filesystem::path &structure_file);
   ~CCfgReader();
   
-  int ReadCellParams(float_tt **Mm);
+  int ReadCellParams(RealVector &Mm);
   int ReadAtoms(std::vector<atom> &atoms);
 protected:
   int ReadNextAtom(atom *newAtomcom);

@@ -43,11 +43,11 @@ BOOST_FIXTURE_TEST_SUITE(testCfgRead, cfgReaderFixture)
 
 BOOST_AUTO_TEST_CASE(testReadMm)
 {
-  float_tt **Mm = float2D(3,3,"");
+  RealVector Mm;
   reader->ReadCellParams(Mm);
-  BOOST_CHECK_CLOSE(Mm[0][0], 3.905, 0.1);
-  BOOST_CHECK_CLOSE(Mm[1][1], 3.905, 0.1);
-  BOOST_CHECK_CLOSE(Mm[2][2], 3.905, 0.1);
+  BOOST_CHECK_CLOSE(Mm[0], 3.905, 0.1);
+  BOOST_CHECK_CLOSE(Mm[4], 3.905, 0.1);
+  BOOST_CHECK_CLOSE(Mm[8], 3.905, 0.1);
 }
 
 BOOST_AUTO_TEST_CASE( testReadAtoms )

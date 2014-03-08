@@ -36,7 +36,7 @@ typedef StructureReaderPtr (*CreateStructureReaderFn)(const boost::filesystem::p
 class IStructureReader
 {
 public:
-  virtual int ReadCellParams(float_tt **Mm)=0;
+  virtual int ReadCellParams(RealVector &Mm)=0;
   virtual int ReadAtoms(std::vector<atom> &atoms)=0;
 };
 
