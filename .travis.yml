@@ -14,5 +14,8 @@ before_script:
   
 script: make && make test
 
+env:
+  - CTEST_OUTPUT_ON_FAILURE=""
+
 after_success:
   - coveralls --exclude test
