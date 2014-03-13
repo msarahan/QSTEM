@@ -44,7 +44,7 @@ static float sqrarg = 0.0f;
 namespace QSTEM
 {
 
-void ludcmp(float_tt *a, int n, int *indx, float_tt *d) {
+void ludcmp(RealVector &a, int n, int *indx, RealVector &d) {
   /* Given a matrix a[1..n][1..n], this routine replaces it by the
      LU decomposition of a rowwise permutation of itself. 
      a and n are input. a is output, arranged as in equation (2.3.14) above; 
@@ -62,7 +62,7 @@ void ludcmp(float_tt *a, int n, int *indx, float_tt *d) {
   */ 
   std::vector<float_tt> vv(n);
 
-  *d=1.0; //No row interchanges yet. 
+  d[0]=1.0; //No row interchanges yet. 
   for (i=0;i<n;i++) { 
     // Loop over rows to get the implicit scaling information.
     big=0.0; 
@@ -118,7 +118,7 @@ void ludcmp(float_tt *a, int n, int *indx, float_tt *d) {
 	a[imax*n+k]=a[j*n+k]; 
 	a[j*n+k]=dum; 
       } 
-      *d = -(*d); //...and change the parity of d. 
+      d[0] = -(d[0]); //...and change the parity of d. 
       vv[imax]=vv[j]; 
       // Also interchange the scale factor. 
     } 
@@ -144,7 +144,7 @@ void ludcmp(float_tt *a, int n, int *indx, float_tt *d) {
   // free_vector(vv,1,n); 
 }
 
-void lubksb(float_tt **a, int n, int *indx, float_tt b[]) { 
+void lubksb(RealVector &a, int n, int *indx, float_tt b[]) { 
   /*
     Solves the set of n linear equations A   X = B. 
     Herea[0..n-1][0..n-1] is input, not as the matrix A but rather 
@@ -170,7 +170,7 @@ void lubksb(float_tt **a, int n, int *indx, float_tt b[]) {
     b[ip]=b[i]; 
     if (ii+1) 
       for (j=ii;j<=i-1;j++) 
-	sum -= a[i][j]*b[j]; 
+	sum -= a[i*n+j]*b[j]; 
     else 
       if (sum) ii=i; 
     /*
@@ -182,8 +182,8 @@ void lubksb(float_tt **a, int n, int *indx, float_tt b[]) {
   for (i=n-1;i>=0;i--) { //Now we do the backsubstitution, equation (2.3.7). 
     sum=b[i]; 
     for (j=i+1;j<n;j++) 
-      sum -= a[i][j]*b[j]; 
-    b[i]=sum/a[i][i]; // Store a component of the solution vector X. 
+      sum -= a[i*n+j]*b[j]; 
+    b[i]=sum/a[i*n+i]; // Store a component of the solution vector X. 
   } 
   //All done! 
 }
@@ -193,7 +193,7 @@ void lubksb(float_tt **a, int n, int *indx, float_tt b[]) {
 void inverse() {
   /*
   // #define N
-  float_tt **a,**y,d,*col; 
+  RealVector &*a,**y,d,*col; 
   int i,j,*indx;
   ludcmp(a,N,indx,&d); // Decompose the matrix just once. 
   for(j=1;j<=N;j++) { 
@@ -212,7 +212,7 @@ void inverse() {
  Input:     m - matrix (3x3) address
  Output:    returns the determinant of 'm'
 ******************************************************************************/
-float_tt det_3x3 (const float_tt *mat)
+float_tt det_3x3 (const RealVector &mat)
 {
     float_tt det;
 
@@ -227,7 +227,7 @@ float_tt det_3x3 (const float_tt *mat)
  Routine:   trans_3x3
  Input:     Mstarget,Msource - matrix (3x3)
 ******************************************************************************/
-void trans_3x3 (float_tt *Mt, const float_tt *Ms)
+void trans_3x3 (RealVector &Mt, const RealVector &Ms)
 {
   int i,j;
   for (i=0;i<2;i++) for (j=0;j<3;j++) Mt[i*3+j] = Ms[j*3+i];
@@ -240,7 +240,7 @@ void trans_3x3 (float_tt *Mt, const float_tt *Ms)
  Input:     m - matrix (3x3) address
  Output:    returns the inverse matrix of 'm'
 ******************************************************************************/
-void inverse_3x3 (float_tt *res, const float_tt *a)
+void inverse_3x3 (RealVector &res, const RealVector &a)
 {
     float_tt det = det_3x3 (a);
 
@@ -283,9 +283,9 @@ void inverse_3x3 (float_tt *res, const float_tt *a)
  */
 // 20140307: commenting, not used.
 /*
-float_tt **invMM(float_tt **Mmatrix, int N, int M) {
+RealVector &*invMM(RealVector &*Mmatrix, int N, int M) {
   static int Mold = 0; // Nold = 0, 
-  static float_tt **invMMmatrix = NULL;
+  static RealVector &*invMMmatrix = NULL;
   // int i;
 
   if (N > M) return NULL;
@@ -308,14 +308,14 @@ float_tt **invMM(float_tt **Mmatrix, int N, int M) {
 //   as v[1..n][1..n].
 // MCS: commenting 20140307 - this really should be handled by some other library.
 /*
-void svdcmp1(float_tt *a, int m, int n, float_tt w[], float_tt **v) {
+void svdcmp1(RealVector &a, int m, int n, float_tt w[], RealVector &*v) {
 
   // uses:  float_tt pythag(float_tt a, float_tt b); 
   int flag,i,its,j,jj,k,l=0,nm=0; 
   float_tt anorm,c,f,g,h,s,scale,x,y,z,*rv1; 
 
   // rv1=vector(1,n); we will just alloacte memory for n+1 elements
-  rv1 = (float_tt *)malloc((n+1)*sizeof(float_tt));
+  rv1 = (RealVector &)malloc((n+1)*sizeof(float_tt));
   g=scale=anorm=0.0; // Householder reduction to bidiagonal form. 
   for (i=1;i<=n;i++) { 
     l=i+1; 
@@ -518,14 +518,14 @@ float_tt pythag(float_tt a, float_tt b) {
 /* This function will calculate the 3-dimensional vector cross product 
  * c = [a x b]
  */
-void crossProduct(const float_tt *a, const float_tt *b, float_tt *c) {
+void crossProduct(const RealVector &a, const RealVector &b, RealVector &c) {
   c[0] = a[1]*b[2]-a[2]*b[1];
   c[1] = a[2]*b[0]-a[0]*b[2];
   c[2] = a[0]*b[1]-a[1]*b[0];
   return;
 }
 
-float_tt dotProduct(const float_tt *a, const float_tt *b) {
+float_tt dotProduct(const RealVector &a, const RealVector &b) {
   return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
 }
 
@@ -534,7 +534,7 @@ float_tt dotProduct(const float_tt *a, const float_tt *b) {
  * in reversed order, i.e. a[0]=z, a[1]=y, a[2]=x.
  */
 
-void vectDiff_f(float *a, float_tt *b, float_tt *c,int revFlag) {
+void vectDiff(RealVector &a, float_tt *b, RealVector &c,int revFlag) {
   if (revFlag > 0) {
     c[0] = a[0]-b[0];
     c[1] = a[1]-b[1];
@@ -550,7 +550,7 @@ void vectDiff_f(float *a, float_tt *b, float_tt *c,int revFlag) {
 
 
 
-void showMatrix(float_tt *M,int Nx, int Ny,char *name) {
+void showMatrix(RealVector &M,int Nx, int Ny,char *name) {
   printf("%s:\n",name);
   for (int i=0;i<Nx;i++) {
     for (int j=0;j<Ny;j++) printf("%10f ",M[i*Nx+j]);
@@ -565,19 +565,12 @@ void showMatrix(float_tt *M,int Nx, int Ny,char *name) {
  * forward(1) (x,y,z), or reversed(-1) (z,y,x) order.
  * This is important for using the reversed order in the atom struct.
  */
-float_tt findLambda(plane *p, float *point, int revFlag) {
-  static float_tt **M=NULL;
-  static float_tt **Minv=NULL;
-  //static float_tt *diff=NULL;
-  std::vector<float_tt> diff(3);
+float_tt findLambda(plane *p, RealVector &point, int revFlag) {
+  RealVector M(9,0);
+  RealVector Minv(9,0);
+  //static RealVector &diff=NULL;
+  RealVector diff(3);
   float_tt lambda; /* dummy variable */
-
-
-  if ((M == NULL) || (Minv == NULL)){// || (diff==NULL)) {
-    M = float2D(3,3,"M");
-    Minv = float2D(3,3,"Minv");
-    //diff = float1D(3,"diff");
-  }
 
   /*
   printf("hello x=(%g %g %g)\n",p->pointX,p->pointY,p->pointZ);
@@ -585,29 +578,49 @@ float_tt findLambda(plane *p, float *point, int revFlag) {
 	 (int)M[0],(int)M[1],(int)M[2]);
   */
 
-  M[0][0] = -((*p).normX); 
-  M[0][3] = -((*p).normY); 
-  M[0][6] = -((*p).normZ);
-  M[0][1] = p->vect1X; M[1][1] = p->vect1Y; M[2][1] = p->vect1Z;
-  M[0][2] = p->vect2X; M[1][2] = p->vect2Y; M[2][2] = p->vect2Z;
-  vectDiff_f(point,&(p->pointX),&diff[0],revFlag);
+  M[0] = -((*p).normX); 
+  M[3] = -((*p).normY); 
+  M[6] = -((*p).normZ);
+  M[1] = p->vect1X; M[4] = p->vect1Y; M[7] = p->vect1Z;
+  M[2] = p->vect2X; M[5] = p->vect2Y; M[8] = p->vect2Z;
+  vectDiff(point,&(p->pointX),diff,revFlag);
 
-  
-  inverse_3x3 (Minv[0],M[0]);
+  inverse_3x3 (Minv,M);
   // showMatrix(M,3,3,"M");
   // showMatrix(Minv,3,3,"Minv");
   // showMatrix(&diff,1,3,"diff");
   // ludcmp(M,3,index,&d);
   // lubksb(M,3,index,point);	
 
-  lambda = dotProduct(Minv[0],&diff[0]);
+  lambda = dotProduct(Minv,diff);
   // printf("lambda: %g\n",lambda);
   return lambda;
 
 }
 
+/**
+Compute the 3D rotation matrix based on input phi values (in radians!)
 
+@param Mm The transformation matrix will be placed in this container.  It will be resized if necessary to 9 elements.
+@param phi_x Rotation about the X axis, expressed in radians
+@param phi_y Rotation about the Y axis, expressed in radians
+@param phi_z Rotation about the Z axis, expressed in radians
+*/
+void populateRotationMatrix(RealVector &Mm, float_tt phi_x, float_tt phi_y, float_tt phi_z)
+{
+	Mm.resize(9,0);
+	Mm[0] = cos(phi_z)*cos(phi_y);
+    Mm[1] = cos(phi_z)*sin(phi_y)*sin(phi_x)-sin(phi_z)*cos(phi_x);
+    Mm[2] = cos(phi_z)*sin(phi_y)*cos(phi_x)+sin(phi_z)*sin(phi_x);
 
+    Mm[3] = sin(phi_z)*cos(phi_y);
+    Mm[4] = sin(phi_z)*sin(phi_y)*sin(phi_x)+cos(phi_z)*cos(phi_x);
+    Mm[5] = sin(phi_z)*sin(phi_y)*cos(phi_x)-cos(phi_z)*sin(phi_x);
+
+    Mm[6] = -sin(phi_y);
+    Mm[7] = cos(phi_y)*sin(phi_x);
+    Mm[8] = cos(phi_y)*cos(phi_x);
+}
 
 /* This function will perform a 3D rotation about the angles
  * phi_x,phi_y,phi_z (in that sequence and about the respective orthogonal axes)
@@ -616,82 +629,18 @@ float_tt findLambda(plane *p, float *point, int revFlag) {
  * in case the angles don't change.
  * The same vector can be specified as input, as well as output vector.
  */
-void rotateVect(float_tt *vectIn,float_tt *vectOut, float_tt phi_x, float_tt phi_y, float_tt phi_z) {
-  static float_tt **Mrot = NULL;
-  //static float_tt *vectOutTemp = NULL;
-  std::vector<float_tt>vectOutTemp(3);
-  static float_tt sphi_x=0, sphi_y=0, sphi_z=0;
-  //  static float_tt *vectOut = NULL;
-  // printf("angles: %g %g %g\n",phi_x,phi_y,phi_z);
+void rotateVect(const RealVector &vectIn, RealVector &vectOut, float_tt phi_x, float_tt phi_y, float_tt phi_z) {
+  RealVector Mrot;
 
-  if (Mrot == NULL) {
-    Mrot = float2D(3,3,"Mrot");
-    memset(Mrot[0],0,9*sizeof(float_tt));
-    Mrot[0][0] = 1;Mrot[1][1] = 1;Mrot[2][2] = 1;
-    //vectOutTemp = float1D(3,"vectOutTemp");
-  }
-  if ((phi_x!=sphi_x) || (phi_y!=sphi_y) || (phi_z!=sphi_z)) {
-    Mrot[0][0] = cos(phi_z)*cos(phi_y);
-    Mrot[0][1] = cos(phi_z)*sin(phi_y)*sin(phi_x)-sin(phi_z)*cos(phi_x);
-    Mrot[0][2] = cos(phi_z)*sin(phi_y)*cos(phi_x)+sin(phi_z)*sin(phi_x);
-
-    Mrot[1][0] = sin(phi_z)*cos(phi_y);
-    Mrot[1][1] = sin(phi_z)*sin(phi_y)*sin(phi_x)+cos(phi_z)*cos(phi_x);
-    Mrot[1][2] = sin(phi_z)*sin(phi_y)*cos(phi_x)-cos(phi_z)*sin(phi_x);
-
-    Mrot[2][0] = -sin(phi_y);
-    Mrot[2][1] = cos(phi_y)*sin(phi_x);
-    Mrot[2][2] = cos(phi_y)*cos(phi_x);
-
-    sphi_x = phi_x;
-    sphi_y = phi_y;
-    sphi_z = phi_z;
-  }
-  vectOutTemp[0] = Mrot[0][0]*vectIn[0]+Mrot[0][1]*vectIn[1]+Mrot[0][2]*vectIn[2];
-  vectOutTemp[1] = Mrot[1][0]*vectIn[0]+Mrot[1][1]*vectIn[1]+Mrot[1][2]*vectIn[2];
-  vectOutTemp[2] = Mrot[2][0]*vectIn[0]+Mrot[2][1]*vectIn[1]+Mrot[2][2]*vectIn[2];
-  memcpy(vectOut,&vectOutTemp[0],3*sizeof(float_tt));
-
-  return;
+  populateRotationMatrix(Mrot, phi_x, phi_y, phi_z);
+  matrixProduct(Mrot, 3, 3, vectIn, 3, 1, vectOut);
 }
 
-void rotateMatrix(float_tt *matrixIn,float_tt *matrixOut, float_tt phi_x, float_tt phi_y, float_tt phi_z) {
-  int i,j,k;
-  static float_tt **Mrot = NULL;
-  std::vector<float_tt>matrixOutTemp(9);
-  //static float_tt *matrixOutTemp = NULL;
-  static float_tt sphi_x=0, sphi_y=0, sphi_z=0;
-  // static float_tt *vectOut = NULL;
-  // printf("angles: %g %g %g\n",phi_x,phi_y,phi_z);
+void rotateMatrix(const RealVector &matrixIn, RealVector &matrixOut, float_tt phi_x, float_tt phi_y, float_tt phi_z) {
+  RealVector Mrot;
 
-  if (Mrot == NULL) {
-    Mrot = float2D(3,3,"Mrot");
-    memset(Mrot[0],0,9*sizeof(float_tt));
-    Mrot[0][0] = 1;Mrot[1][1] = 1;Mrot[2][2] = 1;
-    //matrixOutTemp = float1D(9,"vectOutTemp");
-  }
-  if ((phi_x!=sphi_x) || (phi_y!=sphi_y) || (phi_z!=sphi_z)) {
-    Mrot[0][0] = cos(phi_z)*cos(phi_y);
-    Mrot[0][1] = cos(phi_z)*sin(phi_y)*sin(phi_x)-sin(phi_z)*cos(phi_x);
-    Mrot[0][2] = cos(phi_z)*sin(phi_y)*cos(phi_x)+sin(phi_z)*sin(phi_x);
-
-    Mrot[1][0] = sin(phi_z)*cos(phi_y);
-    Mrot[1][1] = sin(phi_z)*sin(phi_y)*sin(phi_x)+cos(phi_z)*cos(phi_x);
-    Mrot[1][2] = sin(phi_z)*sin(phi_y)*cos(phi_x)-cos(phi_z)*sin(phi_x);
-
-    Mrot[2][0] = -sin(phi_y);
-    Mrot[2][1] = cos(phi_y)*sin(phi_x);
-    Mrot[2][2] = cos(phi_y)*cos(phi_x);
-
-    sphi_x = phi_x;
-    sphi_y = phi_y;
-    sphi_z = phi_z;
-  }
-  memset(&matrixOutTemp[0],0,9*sizeof(float_tt));
-  for (i=0;i<3;i++) for (j=0;j<3;j++) for (k=0;k<3;k++) {
-        matrixOutTemp[i*3+j] += Mrot[i][k]*matrixIn[k*3+j];
-      }
-  memcpy(matrixOut,&matrixOutTemp[0],9*sizeof(float_tt));
+  populateRotationMatrix(Mrot, phi_x, phi_y, phi_z);
+  matrixProduct(Mrot, 3, 3, matrixIn, 3, 3, matrixOut);
 
   return;
 }
@@ -709,7 +658,7 @@ void rotateMatrix(float_tt *matrixIn,float_tt *matrixOut, float_tt phi_x, float_
  * gamma = angle between by and ax.
  */
 // #define SQR(x) ((x)*(x))
-void makeCellVect(grainBox *grain, float_tt *vax, float_tt *vby, float_tt *vcz) {
+void makeCellVect(grainBox *grain, RealVector &vax, RealVector &vby, RealVector &vcz) {
   
   if ((grain->alpha == 90) && (grain->beta == 90) && (grain->gamma == 90)) {
     printf("Orthogonal unit cell\n");
@@ -741,7 +690,7 @@ void makeCellVect(grainBox *grain, float_tt *vax, float_tt *vby, float_tt *vcz) 
 }
 /* just like the function above, but with angles from the MULS struct */
 /*
-void makeCellVectMuls(MULS *muls, float_tt *vax, float_tt *vby, float_tt *vcz) {
+void makeCellVectMuls(MULS *muls, RealVector &vax, RealVector &vby, RealVector &vcz) {
   
   if ((muls->cAlpha == 90) && (muls->cBeta == 90) && (muls->cGamma == 90)) {
     printf("Orthogonal unit cell\n");
@@ -769,35 +718,8 @@ void makeCellVectMuls(MULS *muls, float_tt *vax, float_tt *vby, float_tt *vcz) {
 }
 */
 
-float_tt vectLength(float_tt *vect) {
+float_tt vectLength(RealVector &vect) {
   return sqrt(vect[0]*vect[0]+vect[1]*vect[1]+vect[2]*vect[2]);
-}
-
-/* c = a*b */
-
-
-
-/* c = a*b */
-void matrixProductInt(float_tt **a,int Nxa, int Nya, int **b,int Nxb, int Nyb, float_tt **c) {
-  int i,j,k;
-
-  if (Nya != Nxb) {
-    printf("multiplyMatrix: Inner Matrix dimensions do not agree!\n");
-    return;
-  }
-
-  /*
-  for (i=0;i<Nxa;i++)
-    for (j=0;j<Nyb;j++) {
-      c[i][j] = 0.0;
-      for (k=0;k<Nya;k++)
-	c[i][j] += a[i][k]*b[k][j];
-    }
-  */
-  for (i=0;i<Nxa;i++) for (j=0;j<Nyb;j++) {
-      c[0][i*Nyb+j] = 0.0;
-      for (k=0;k<Nya;k++) c[0][i*Nyb+j] += a[0][i*Nya+k] * (float_tt)(b[0][k*Nyb+j]);
-    }
 }
 
 } // end namespace QSTEM

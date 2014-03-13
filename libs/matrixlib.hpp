@@ -28,35 +28,42 @@ QSTEM - image simulation for TEM/STEM/CBED
 namespace QSTEM
 {
 
-void ludcmp(float_tt *a, int n, int *indx, float_tt *d);
-void lubksb(float_tt *a, int n, int *indx, float_tt b[]);
-float_tt det_3x3 (const float_tt *mat);
-void inverse_3x3 (float_tt *res, const float_tt *a);
-void trans_3x3 (float_tt *Mt, const float_tt *Ms);
+void ludcmp(RealVector &a, int n, int *indx, RealVector &d);
+void lubksb(RealVector &a, int n, int *indx, float_tt b[]);
+float_tt det_3x3 (const RealVector &mat);
+void inverse_3x3 (RealVector &res, const RealVector &a);
+void trans_3x3 (RealVector &Mt, const RealVector &Ms);
 
 // svdcmp1 uses the NR unit-offset vectors :-(
-void svdcmp1(float_tt *a, int m, int n, float_tt w[], float_tt *v);
+void svdcmp1(RealVector &a, int m, int n, float_tt w[], RealVector &v);
 float_tt pythag(float_tt a, float_tt b);
 
 /* vector functions:
  */
-void crossProduct(const float_tt *a, const float_tt *b, float_tt *c);
-float_tt dotProduct(const float_tt *a, const float_tt *b);
-float_tt findLambda(plane *p, float *point, int revFlag);
-void showMatrix(float_tt *M,int Nx, int Ny,char *name);
-void vectDiff_f(float *a, float_tt *b, float_tt *c,int revFlag);
-float_tt vectLength(float_tt *vect);
-void makeCellVect(grainBox *grain, float_tt *vax, float_tt *vby, float_tt *vcz);
-//void makeCellVectMuls(MULS *muls, float_tt *vax, float_tt *vby, float_tt *vcz);
-void rotateVect(float_tt *vectIn,float_tt *vectOut, float_tt phi_x, float_tt phi_y, float_tt phi_z);
-void rotateMatrix(float_tt *matrixIn,float_tt *matrixOut, float_tt phi_x, float_tt phi_y, float_tt phi_z);
+void crossProduct(const RealVector &a, const RealVector &b, RealVector &c);
+float_tt dotProduct(const RealVector &a, const RealVector &b);
+float_tt findLambda(plane *p, RealVector &point, int revFlag);
+void showMatrix(RealVector &M,int Nx, int Ny,char *name);
+void vectDiff(RealVector &a, float_tt *b, RealVector &c,int revFlag);
+float_tt vectLength(RealVector &vect);
+void makeCellVect(grainBox *grain, RealVector &vax, RealVector &vby, RealVector &vcz);
+//void makeCellVectMuls(MULS *muls, RealVector &vax, RealVector &vby, RealVector &vcz);
+void rotateVect(const RealVector &vectIn,RealVector &vectOut, float_tt phi_x, float_tt phi_y, float_tt phi_z);
+void rotateMatrix(const RealVector &matrixIn,RealVector &matrixOut, float_tt phi_x, float_tt phi_y, float_tt phi_z);
+void populateRotationMatrix(RealVector &Mm, float_tt phi_x, float_tt phi_y, float_tt phi_z);
 
 /* |vect| */
-float_tt vectLength(float_tt *vect);
+float_tt vectLength(RealVector &vect);
+
+template <typename T>
+void rotateVect(const T &vectIn, T &vectOut, const RealVector &Mm)
+{
+	matrixProduct(Mm, 3, 3, vectIn, 3, 1, vectOut);
+}
 
   /* c = a*b */
   template <typename T>
-  void matrixProduct(T *a,int Nxa, int Nya, T *b,int Nxb, int Nyb, T *c) {
+  void matrixProduct(const T &a,int Nxa, int Nya, const T &b,int Nxb, int Nyb, T &c) {
     int i,j,k;
 
     if (Nya != Nxb) {

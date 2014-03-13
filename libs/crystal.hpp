@@ -128,10 +128,13 @@ protected:
 
   void OffsetCenter(atom &center);
 
+  void GetRotationMatrix(RealVector &Mm, float_tt tilt_x, float_tt tilt_y, float_tt tilt_z);
   void Inverse_3x3 (RealVector &res, const RealVector &a);
   void RotateVect(const RealVector &vectIn, RealVector &vectOut, float_tt phi_x, float_tt phi_y, float_tt phi_z);
+  void RotateVect(const RealVector &vectIn, RealVector &vectOut, const RealVector &Mm);
   void MatrixProduct(const RealVector &a,int Nxa, int Nya, const RealVector &b,int Nxb, int Nyb, RealVector &c);
   void RotateMatrix(const RealVector &matrixIn, RealVector &matrixOut, float_tt phi_x, float_tt phi_y, float_tt phi_z);
+  void RotateMatrix(const RealVector &matrixIn, RealVector &matrixOut, const RealVector &Mm);
 
   static int AtomCompareZnum(const void *atPtr1,const void *atPtr2);
   static int AtomCompareZYX(const void *atPtr1,const void *atPtr2);

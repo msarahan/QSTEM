@@ -330,18 +330,7 @@ void CCrystal::ReadUnitCell(bool handleVacancies)
 void CCrystal::TiltCell(float_tt tilt_x, float_tt tilt_y, float_tt tilt_z)
 {
   size_t i, natom=m_atoms.size();
-  for(i=0;i<natom;i++) {
-    // TODO: this is a generic matrix multiplication - replace with BLAS.
-      
-    // This converts also to cartesian coordinates
-    float_tt x = m_Mm[0]*m_atoms[i].x+m_Mm[3]*m_atoms[i].y+m_Mm[6]*m_atoms[i].z;
-    float_tt y = m_Mm[1]*m_atoms[i].x+m_Mm[4]*m_atoms[i].y+m_Mm[7]*m_atoms[i].z;
-    float_tt z = m_Mm[2]*m_atoms[i].x+m_Mm[5]*m_atoms[i].y+m_Mm[8]*m_atoms[i].z;
-
-    m_atoms[i].x = x;
-    m_atoms[i].y = y;
-    m_atoms[i].z = z;
-  }      
+  ConvertCoordinates(CARTESIAN);
   /***************************************************************
    * Now let us tilt around the center of the full crystal
    */   
@@ -387,12 +376,14 @@ void CCrystal::TiltCell(float_tt tilt_x, float_tt tilt_y, float_tt tilt_z)
         }
       }
 
-  if ((m_ctiltx != 0) || (m_ctilty != 0) || (m_ctiltz != 0)) {			
+  if ((m_ctiltx != 0) || (m_ctilty != 0) || (m_ctiltz != 0)) {
+	RealVector Mrot;
+	GetRotationMatrix(Mrot, tilt_x,tilt_y,tilt_z);
     for(i=0;i<natom;i++) {
       u[0] = m_atoms[i].x-boxCenterX; 
       u[1] = m_atoms[i].y-boxCenterY; 
       u[2] = m_atoms[i].z-boxCenterZ; 
-      RotateVect(u,u,tilt_x,tilt_y,tilt_z);  // simply applies rotation matrix
+      RotateVect(u,u,Mrot);  // simply applies rotation matrix
       u[0] += boxCenterX;
       u[1] += boxCenterY; 
       u[2] += boxCenterZ; 
@@ -439,6 +430,7 @@ void CCrystal::ConvertCoordinates(CCrystal::CoordinateType coord_type)
 {
 	RealVector Mm(9,0);
 	RealVector tmp_vec, transformed_vec;
+	size_t natoms = m_atoms.size();
 	if (coord_type==m_coordinateSpace)
 		return;
 	if (coord_type==CARTESIAN)
@@ -453,7 +445,7 @@ void CCrystal::ConvertCoordinates(CCrystal::CoordinateType coord_type)
 	tmp_vec.resize(m_atoms.size()*3);
 	transformed_vec.resize(m_atoms.size()*3);
 	// Compile vector of fractional coordinates
-	for (size_t i=0; i<m_atoms.size(); i++)
+	for (size_t i=0; i<natoms; i++)
 	{
 		tmp_vec[i*3]=m_atoms[i].x;
 		tmp_vec[i*3+1]=m_atoms[i].y;
@@ -462,7 +454,7 @@ void CCrystal::ConvertCoordinates(CCrystal::CoordinateType coord_type)
 	// matrix product of cell matrix with coordinates
 	MatrixProduct(Mm,3,3,tmp_vec,3,m_atoms.size(),transformed_vec);
 	// place transformed coordinates in atoms vector
-	for (size_t i=0; i<m_atoms.size(); i++)
+	for (size_t i=0; i<natoms; i++)
 	{
 		m_atoms[i].x=transformed_vec[i*3];
 		m_atoms[i].y=transformed_vec[i*3+1];
@@ -473,7 +465,7 @@ void CCrystal::ConvertCoordinates(CCrystal::CoordinateType coord_type)
 
 
 // TODO: old version return a pointer to new atom positions.  Can we do this in place?
-//		If not, just set atoms to the new vector.
+//		If not, just set m_atoms to the new vector.
 void CCrystal::TiltBoxed(int ncoord,bool handleVacancies) {
   int atomKinds = 0;
   int iatom,jVac,jequal,jChoice,i2,ix,iy,iz,atomCount = 0,atomSize;
@@ -1111,22 +1103,32 @@ namespace QSTEM
 void CCrystal::Inverse_3x3(RealVector &res, const RealVector &a)
 {
   // use function from matrixlib for now
-  return inverse_3x3((float_tt *)&res[0], (float_tt *)&a[0]);
+  return inverse_3x3(res, a);
 }
 
   void CCrystal::RotateVect(const RealVector &vectIn, RealVector &vectOut, float_tt phi_x, float_tt phi_y, float_tt phi_z)
 {
-  return rotateVect((float_tt *)&vectIn[0], (float_tt *)&vectOut[0], phi_x, phi_y, phi_z);
+  return rotateVect(vectIn, vectOut, phi_x, phi_y, phi_z);
 }
+
+  void CCrystal::RotateVect(const RealVector &vectIn, RealVector &vectOut, const RealVector &Mm)
+  {
+	  return rotateVect(vectIn, vectOut, Mm);
+  }
 
 void CCrystal::MatrixProduct(const RealVector &a,int Nxa, int Nya, const RealVector &b,int Nxb, int Nyb, RealVector &c)
 {
-  return matrixProduct((float_tt *)&a[0], Nxa, Nya, (float_tt *)&b[0], Nxb, Nyb, (float_tt *)&c[0]);
+  return matrixProduct(a, Nxa, Nya, b, Nxb, Nyb, c);
+}
+
+void CCrystal::GetRotationMatrix(RealVector &Mm, float_tt tilt_x, float_tt tilt_y, float_tt tilt_z)
+{
+	return populateRotationMatrix(Mm, tilt_x, tilt_y, tilt_z);
 }
 
 void CCrystal::RotateMatrix(const RealVector &matrixIn, RealVector &matrixOut, float_tt phi_x, float_tt phi_y, float_tt phi_z)
 {
-  return rotateMatrix((float_tt *)&matrixIn[0], (float_tt *)&matrixOut[0], phi_x, phi_y, phi_z);
+  return rotateMatrix(matrixIn, matrixOut, phi_x, phi_y, phi_z);
 }
 
 // ******************  end matrix manipulation
