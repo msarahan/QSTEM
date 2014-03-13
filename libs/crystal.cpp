@@ -50,12 +50,16 @@ CCrystal::CCrystal()
   , m_maxY(0)
   , m_minZ(0)
   , m_maxZ(0)
+  , m_offsetX(0)
+  , m_offsetY(0)
   , m_coordinateSpace(FRACTIONAL)
 {
 }
 
 CCrystal::CCrystal(ConfigReaderPtr &configReader)
 	: m_coordinateSpace(FRACTIONAL)
+	, m_offsetX(0)
+	, m_offsetY(0)
 {
   CCrystal();
   boost::filesystem::path fileName;
@@ -91,6 +95,8 @@ CCrystal::CCrystal(unsigned ncx, unsigned ncy, unsigned ncz,
 	  , m_ctilty(ty)
 	  , m_ctiltz(tz)
 	  , m_coordinateSpace(FRACTIONAL)
+	  , m_offsetX(0)
+	  , m_offsetY(0)
 {
 }
 
@@ -376,7 +382,7 @@ void CCrystal::TiltCell(float_tt tilt_x, float_tt tilt_y, float_tt tilt_z)
         }
       }
 
-  if ((m_ctiltx != 0) || (m_ctilty != 0) || (m_ctiltz != 0)) {
+  if ((tilt_x != 0) || (tilt_y != 0) || (tilt_z != 0)) {
 	RealVector Mrot;
 	GetRotationMatrix(Mrot, tilt_x,tilt_y,tilt_z);
     for(i=0;i<natom;i++) {

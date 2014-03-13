@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE( testTilt )
   // 
   cryst->SetNCells(3,3,3);
   cryst->TiltCell(M_PI/2,0,0);
-  BOOST_CHECK_CLOSE(cryst->GetAtom(0).x,0,0.5);
+  BOOST_CHECK_CLOSE(cryst->GetAtom(0).x,1.39786,0.5);
 }
 
 BOOST_AUTO_TEST_CASE( testTiltBoxed )
