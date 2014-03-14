@@ -27,13 +27,16 @@ using namespace QSTEM;
 struct PotFixture {
   PotFixture()
   {
-    pot = CPotFactory::Get()->GetPotential(POTENTIAL3D, POTENTIALFFT);
+    //pot = CPotFactory::Get()->GetPotential(POTENTIAL3D, POTENTIALFFT);
+	configReader = CConfigReaderFactory::Get()->GetReader("stem_STO_4x4.qsc");
+	pot = CPotFactory::Get()->GetPotential(configReader);
     //std::cout << "setup qsc config reader fixture" << std::endl; 
   }
   ~PotFixture()
   { //std::cout << "teardown qsc config reader fixture" << std::endl;
   }
   PotPtr pot;
+  ConfigReaderPtr configReader;
 };
 
 BOOST_FIXTURE_TEST_SUITE(TestPotential3DFFT, PotFixture)

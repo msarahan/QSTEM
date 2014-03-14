@@ -52,9 +52,8 @@ PotPtr CPotFactory::GetPotential(const std::string &name)
 PotPtr CPotFactory::GetPotential(PotentialDimension d, PotentialSpace s)
 {
   std::stringstream str;
-  str << (d==POTENTIAL3D) ? "3D" : "2D";
-  str << (s==POTENTIALFFT) ? "FFT" : "";
-  str << std::ends;
+  str << (d==POTENTIAL3D ? "3D" : "2D");
+  str << (s==POTENTIALFFT ? "FFT" : "");
   return GetPotential(str.str());
 }
 

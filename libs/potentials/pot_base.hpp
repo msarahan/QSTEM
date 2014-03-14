@@ -43,6 +43,8 @@ public:
   CPotential(unsigned nx, unsigned ny, unsigned nz, float_tt dx, float_tt dy, float_tt dz, float_tt atomRadius, float_tt v0);
   CPotential(const ConfigReaderPtr &configReader);
   //~CPotential();
+  virtual void Initialize();
+  virtual void Initialize(ConfigReaderPtr configReader);
 
   virtual void DisplayParams();
 
@@ -92,7 +94,6 @@ public:
   float_tt m_atomRadius;
 
 protected:
-  void Initialize();
   void SliceSetup();
   void ResizeSlices();
   void ReadSlice(const std::string &fileName, ComplexVector &slice, unsigned idx);

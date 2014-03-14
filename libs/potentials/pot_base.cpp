@@ -31,19 +31,7 @@ CPotential::CPotential() : IPotential()
 
 CPotential::CPotential(const ConfigReaderPtr &configReader) : IPotential()
 {
-  configReader->ReadProbeArraySize(m_nx, m_ny);
-  configReader->ReadResolution(m_dx, m_dy);
-  configReader->ReadVoltage(m_v0);
-  configReader->ReadPotentialOutputParameters(m_savePotential, m_saveProjectedPotential, m_plotPotential);
-  configReader->ReadAtomRadius(m_atomRadius);
-  configReader->ReadSliceParameters(m_centerSlices, m_sliceThickness, m_nslices, m_outputInterval, m_zOffset);
-  configReader->ReadSliceOffset(m_offsetX, m_offsetY);
-
-  // Read if we should load the pot from a file
-  configReader->ReadLoadPotential(m_readPotential, m_potFileBase);
-  // if not, we should initialize the crystal structure
-
-  Initialize();
+  Initialize(configReader);
 }
 
 void CPotential::Initialize()
@@ -76,6 +64,23 @@ void CPotential::Initialize()
     m_cz[0] = m_sliceThickness;
 
   m_slicePos[0] = m_zOffset;
+}
+
+void CPotential::Initialize(ConfigReaderPtr configReader)
+{
+  configReader->ReadProbeArraySize(m_nx, m_ny);
+  configReader->ReadResolution(m_dx, m_dy);
+  configReader->ReadVoltage(m_v0);
+  configReader->ReadPotentialOutputParameters(m_savePotential, m_saveProjectedPotential, m_plotPotential);
+  configReader->ReadAtomRadius(m_atomRadius);
+  configReader->ReadSliceParameters(m_centerSlices, m_sliceThickness, m_nslices, m_outputInterval, m_zOffset);
+  configReader->ReadSliceOffset(m_offsetX, m_offsetY);
+
+  // Read if we should load the pot from a file
+  configReader->ReadLoadPotential(m_readPotential, m_potFileBase);
+  // if not, we should initialize the crystal structure
+
+  Initialize();
 }
 
 void CPotential::DisplayParams()
