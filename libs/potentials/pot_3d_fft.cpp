@@ -47,7 +47,7 @@ void C3DFFTPotential::DisplayParams()
   printf("* Potential calculation: 3D (FFT method)");
 }
 
-void C3DFFTPotential::AddAtomNonPeriodic(std::vector<atom>::iterator &atom, 
+void C3DFFTPotential::AddAtomNonPeriodic(const atom &_atom, 
                          float_tt atomBoxX, unsigned int iAtomX, 
                          float_tt atomBoxY, unsigned int iAtomY, 
                          float_tt atomZ)
@@ -68,7 +68,7 @@ void C3DFFTPotential::AddAtomNonPeriodic(std::vector<atom>::iterator &atom,
     if ((iAtomZ+iaz0 <        m_nslices) && (iAtomZ+iaz1 >= 0)) {
       // retrieve the pointer for this atom
       ComplexVector atPotPtr;
-      GetAtomPotential3D(atom->Znum,m_tds ? 0 : atom->dw,nzSub,Nr,Nz_lut,atPotPtr);
+      GetAtomPotential3D(_atom.Znum,m_tds ? 0 : _atom.dw,nzSub,Nr,Nz_lut,atPotPtr);
 #if USE_Q_POT_OFFSETS
       // retrieve the pointer to the array of charge-dependent potential offset
       // This function will return NULL; if the charge of this atom is zero:
@@ -180,22 +180,22 @@ void C3DFFTPotential::AddAtomNonPeriodic(std::vector<atom>::iterator &atom,
       } // if within bounds        
 }
 
-void C3DFFTPotential::AddAtomToSlices(std::vector<atom>::iterator &atom, float_tt atomX, float_tt atomY, float_tt atomZ)
+void C3DFFTPotential::AddAtomToSlices(const atom &_atom, float_tt atomX, float_tt atomY, float_tt atomZ)
 {
   unsigned iAtomX = (int)floor(atomX/m_dx);        
   unsigned iAtomY = (int)floor(atomY/m_dy);
 
   if (m_periodicXY)
     {
-      AddAtomPeriodic(atom, atomX, iAtomX, atomY, iAtomY, atomZ);
+      AddAtomPeriodic(_atom, atomX, iAtomX, atomY, iAtomY, atomZ);
     }
   else
     {
-      AddAtomNonPeriodic(atom, atomX, iAtomX, atomY, iAtomY, atomZ);
+      AddAtomNonPeriodic(_atom, atomX, iAtomX, atomY, iAtomY, atomZ);
     }
 }
 
-void C3DFFTPotential::AddAtomPeriodic(std::vector<atom>::iterator &atom, 
+void C3DFFTPotential::AddAtomPeriodic(const atom &_atom, 
                          float_tt atomBoxX, unsigned int iAtomX, 
                          float_tt atomBoxY, unsigned int iAtomY, 
                          float_tt atomZ)
@@ -209,14 +209,14 @@ void C3DFFTPotential::AddAtomPeriodic(std::vector<atom>::iterator &atom,
   unsigned nzSub, Nr, Nz_lut;
 
   // define range of sampling from atomZ-/+atomRadius
-  int iaz0 = iAtomZ-m_iRadZ < 0 ? -iAtomZ : -m_iRadZ;
-  unsigned iaz1 = iAtomZ+m_iRadZ >= m_nslices ? m_nslices-iAtomZ-1 : m_iRadZ;
+  int iaz0 = (iAtomZ-m_iRadZ) < 0 ? -iAtomZ : -m_iRadZ;
+  unsigned iaz1 = ((iAtomZ+m_iRadZ) >= m_nslices) ? m_nslices-iAtomZ-1 : m_iRadZ;
   // if (iatom < 2) printf("iatomZ: %d, %d cz=%g, %g: %d, %d\n",iAtomZ,iaz0,m_sliceThickness,atomZ,(int)(-2.5-atomZ),(int)(atomZ+2.5));
   // printf("%d: iatomZ: %d, %d cz=%g, %g\n",iatom,iAtomZ,iaz0,m_sliceThickness,atomZ);
   if ((iAtomZ+iaz0 < m_nslices) && (iAtomZ+iaz1 >= 0)) {
     // retrieve the pointer for this atom
     ComplexVector atPotPtr;
-    GetAtomPotential3D(atom->Znum,m_tds ? 0 : atom->dw,nzSub,Nr,Nz_lut, atPotPtr);
+    GetAtomPotential3D(_atom.Znum,m_tds ? 0 : _atom.dw,nzSub,Nr,Nz_lut, atPotPtr);
 #if USE_Q_POT_OFFSETS
     // retrieve the pointer to the array of charge-dependent potential offset
     // This function will return NULL; if the charge of this atom is zero:

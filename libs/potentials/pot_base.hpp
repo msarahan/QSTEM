@@ -57,9 +57,9 @@ public:
   // TODO: need abstracted structure reader
   //virtual void ReadAtoms();
   virtual void ReadPotential(std::string &fileName, unsigned subSlabIdx);
-  virtual void CenterAtomZ(std::vector<atom>::iterator &atom, float_tt &z);
-  virtual void AddAtomToSlices(std::vector<atom>::iterator &atom, float_tt atomX, float_tt atomY, float_tt atomZ)=0;
-  void AddAtomRealSpace(std::vector<atom>::iterator &atom, float_tt atomX, float_tt atomY, float_tt atomZ);
+  virtual void CenterAtomZ(const atom &_atom, float_tt &z);
+  virtual void AddAtomToSlices(const atom &_atom, float_tt atomX, float_tt atomY, float_tt atomZ)=0;
+  void AddAtomRealSpace(const atom &_atom, float_tt atomX, float_tt atomY, float_tt atomZ);
   
   // *************************  Getters  ********************** 
   unsigned GetNSlices() const {return m_nslices;}
@@ -98,7 +98,7 @@ public:
 protected:
   void ResizeSlices();
   void ReadSlice(const std::string &fileName, ComplexVector &slice, unsigned idx);
-  virtual void _AddAtomRealSpace(std::vector<atom>::iterator &atom, 
+  virtual void _AddAtomRealSpace(const atom &_atom, 
                                  float_tt atomX, unsigned int ix, 
                                  float_tt atomY, unsigned int iy, 
                                  float_tt atomZ, unsigned int iatomZ)=0;

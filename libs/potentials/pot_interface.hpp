@@ -59,6 +59,8 @@ public:
   virtual float_tt GetSliceThickness(unsigned idx) const =0;
   virtual void GetSizePixels(unsigned &nx, unsigned &ny) const =0;
 
+  virtual void AddAtomToSlices(const atom &_atom, float_tt atomX, float_tt atomY, float_tt atomZ)=0;
+
   virtual void WriteSlice(unsigned idx)=0;
   virtual void WriteProjectedPotential()=0;
   virtual void GetSlice(unsigned idx, ComplexVector &vec)=0;

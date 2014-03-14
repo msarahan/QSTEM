@@ -50,6 +50,8 @@ BOOST_AUTO_TEST_CASE(TestAtomBoxGeneration)
 BOOST_AUTO_TEST_CASE(testSliceSetup)
 {
 	pot->SliceSetup(0,10,0,10);
+	atom _atom(16, "O", 5, 5, 5, 0.7323, 1.0, -2);
+	pot->AddAtomToSlices(_atom, _atom.x, _atom.y, _atom.z);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

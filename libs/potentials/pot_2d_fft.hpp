@@ -33,14 +33,14 @@ public:
 
 
   virtual void MakeSlices(int nlayer, char *fileName, atom *center);
-  virtual void AddAtomToSlices(std::vector<atom>::iterator &atom, 
+  virtual void AddAtomToSlices(const atom &_atom, 
                                float_tt atomX, float_tt atomY, float_tt atomZ);
 protected:
-  virtual void AddAtomPeriodic(std::vector<atom>::iterator &atom, 
+  virtual void AddAtomPeriodic(const atom &_atom, 
                          float_tt atomBoxX, unsigned int ix, 
                          float_tt atomBoxY, unsigned int iy, 
                          float_tt atomZ);
-  virtual void AddAtomNonPeriodic(std::vector<atom>::iterator &atom, 
+  virtual void AddAtomNonPeriodic(const atom &_atom, 
                          float_tt atomBoxX, unsigned int ix, 
                          float_tt atomBoxY, unsigned int iy, 
                          float_tt atomZ);

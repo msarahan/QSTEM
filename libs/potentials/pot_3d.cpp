@@ -113,16 +113,16 @@ bool C3DPotential::CheckAtomZInBounds(float_tt atomZ)
   return ((atomZ - m_atomRadius > m_c) && (atomZ + m_atomRadius + m_sliceThickness >= 0));
 }
 
-void C3DPotential::AddAtomToSlices(std::vector<atom>::iterator &atom, 
+void C3DPotential::AddAtomToSlices(const atom &_atom, 
                      float_tt atomX, float_tt atomY, float_tt atomZ)
 {
   if (!m_periodicZ && CheckAtomZInBounds(atomZ))
     {
-      AddAtomRealSpace(atom, atomX, atomY, atomZ);
+      AddAtomRealSpace(_atom, atomX, atomY, atomZ);
     }
 }
 
-void C3DPotential::_AddAtomRealSpace(std::vector<atom>::iterator &atom, 
+void C3DPotential::_AddAtomRealSpace(const atom &_atom, 
                                      float_tt atomBoxX, unsigned ix,
                                      float_tt atomBoxY, unsigned iy,
                                      float_tt atomBoxZ, unsigned iAtomZ)
@@ -154,8 +154,8 @@ void C3DPotential::_AddAtomRealSpace(std::vector<atom>::iterator &atom,
      * We can look up the proj potential at that spot
      * using trilinear extrapolation.
      */
-    AtomBoxLookUp(dPot,atom->Znum,atomBoxX,atomBoxY,atomBoxZ,
-                  m_tds ? 0 : atom->dw);
+    AtomBoxLookUp(dPot,_atom.Znum,atomBoxX,atomBoxY,atomBoxZ,
+                  m_tds ? 0 : _atom.dw);
     // printf("access: %d %d %d\n",iz,ix,iy);
     unsigned idx=ix*m_ny+iy;
     m_trans[iz][idx]+=dPot;
@@ -165,9 +165,9 @@ void C3DPotential::_AddAtomRealSpace(std::vector<atom>::iterator &atom,
 }
 
 
-void C3DPotential::CenterAtomZ(std::vector<atom>::iterator &atom, float_tt &z)
+void C3DPotential::CenterAtomZ(const atom &_atom, float_tt &z)
 {
-  CPotential::CenterAtomZ(atom, z);
+  CPotential::CenterAtomZ(_atom, z);
   z -= m_sliceThickness;
 }
 

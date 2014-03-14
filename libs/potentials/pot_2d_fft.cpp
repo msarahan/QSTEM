@@ -61,22 +61,22 @@ void C2DFFTPotential::MakeSlices(int nlayer, char *fileName, atom *center)
     }
 }
 
-void C2DFFTPotential::AddAtomToSlices(std::vector<atom>::iterator &atom, float_tt atomX, float_tt atomY, float_tt atomZ)
+void C2DFFTPotential::AddAtomToSlices(const atom &_atom, float_tt atomX, float_tt atomY, float_tt atomZ)
 {
   unsigned iAtomX = (int)floor(atomX/m_dx);        
   unsigned iAtomY = (int)floor(atomY/m_dy);
 
   if (m_periodicXY)
     {
-      AddAtomPeriodic(atom, atomX, iAtomX, atomY, iAtomY, atomZ);
+      AddAtomPeriodic(_atom, atomX, iAtomX, atomY, iAtomY, atomZ);
     }
   else
     {
-      AddAtomNonPeriodic(atom, atomX, iAtomX, atomY, iAtomY, atomZ);
+      AddAtomNonPeriodic(_atom, atomX, iAtomX, atomY, iAtomY, atomZ);
     }
 }
 
-void C2DFFTPotential::AddAtomNonPeriodic(std::vector<atom>::iterator &atom, 
+void C2DFFTPotential::AddAtomNonPeriodic(const atom &_atom, 
                          float_tt atomBoxX, unsigned int iAtomX, 
                          float_tt atomBoxY, unsigned int iAtomY, 
                          float_tt atomZ)
@@ -99,7 +99,7 @@ void C2DFFTPotential::AddAtomNonPeriodic(std::vector<atom>::iterator &atom,
       float_tt s12 = (1-ddx)*ddy;
       float_tt s21 = ddx*(1-ddy);
       float_tt s22 = ddx*ddy;
-      complex_tt *atPotPtr = GetAtomPotential2D(atom->Znum,m_tds ? 0 : atom->dw);
+      complex_tt *atPotPtr = GetAtomPotential2D(_atom.Znum,m_tds ? 0 : _atom.dw);
                   
       for (unsigned iax=iax0; iax < iax1; iax++) 
         {
@@ -122,7 +122,7 @@ void C2DFFTPotential::AddAtomNonPeriodic(std::vector<atom>::iterator &atom,
 }
 
 
-void C2DFFTPotential::AddAtomPeriodic(std::vector<atom>::iterator &atom, 
+void C2DFFTPotential::AddAtomPeriodic(const atom &_atom, 
                          float_tt atomBoxX, unsigned int iAtomX, 
                          float_tt atomBoxY, unsigned int iAtomY, 
                          float_tt atomZ)
@@ -145,7 +145,7 @@ void C2DFFTPotential::AddAtomPeriodic(std::vector<atom>::iterator &atom,
     float_tt s12 = ddx*(1-ddy);
     float_tt s11 = ddx*ddy;
 
-    complex_tt *atPotPtr = GetAtomPotential2D(atom->Znum,m_tds ? 0 : atom->dw);
+    complex_tt *atPotPtr = GetAtomPotential2D(_atom.Znum,m_tds ? 0 : _atom.dw);
 
     for (unsigned iax=iax0; iax < iax1; iax++) { // TODO: should use ix += OVERSAMPLING
       // printf("(%d, %d): %d,%d\n",iax,nyAtBox,(iOffsX+OVERSAMPLING*(iax-iax0)),iOffsY+iay1-iay0);

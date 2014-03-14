@@ -316,7 +316,7 @@ complex_tt CPotential::GetSlicePixel(unsigned iz, unsigned ix, unsigned iy)
 }
 
 
-void CPotential::CenterAtomZ(std::vector<atom>::iterator &atom, float_tt &z)
+void CPotential::CenterAtomZ(const atom &_atom, float_tt &z)
 {
   
   /*
@@ -328,7 +328,7 @@ void CPotential::CenterAtomZ(std::vector<atom>::iterator &atom, float_tt &z)
    * The z-offset 0.5*cz[0] will position atoms at z=0 into the middle of the first
    * slice.
    */
-    z = atom->z-m_c*(float_tt)(m_cellDiv-m_divCount-1) + m_zOffset
+    z = _atom.z-m_c*(float_tt)(m_cellDiv-m_divCount-1) + m_zOffset
       -(0.5*m_sliceThickness*(1-(int)m_centerSlices));
 }
 
@@ -372,27 +372,27 @@ void CPotential::MakeSlices(int nlayer,char *fileName, atom *center)
 
   time(&time0);
   
-  for (std::vector<atom>::iterator atom = m_atoms.begin();atom!=m_atoms.end();atom++) 
+  for (std::vector<atom>::iterator _atom = m_atoms.begin();_atom!=m_atoms.end();_atom++) 
     {
     // make sure we skip vacancies:
-    while (atom->Znum == 0) atom++;
-    size_t iatom=atom-m_atoms.begin();
+    while (_atom->Znum == 0) _atom++;
+    size_t iatom=_atom-m_atoms.begin();
     if ((m_printLevel >= 4) && (m_displayPotCalcInterval > 0) && ((iatom+1) % (m_displayPotCalcInterval)) == 0) 
       {
-        printf("Adding potential for atom %d (Z=%d, pos=[%.1f, %.1f, %.1f])\n",iatom+1,atom->Znum,
-               atom->x, atom->y, atom->z);
+        printf("Adding potential for atom %d (Z=%d, pos=[%.1f, %.1f, %.1f])\n",iatom+1,_atom->Znum,
+               _atom->x, _atom->y, _atom->z);
       }
     /* atom coordinates in cartesian coords
      * The x- and y-position will be offset by the starting point
      * of the actually needed array of projected potential
      */
-    float_tt atomX = atom->x - m_offsetX;
-    float_tt atomY = atom->y - m_offsetY;
+    float_tt atomX = _atom->x - m_offsetX;
+    float_tt atomY = _atom->y - m_offsetY;
     float_tt atomZ;
     // make sure that slices are centered for 2D and 3D differently:
-    CenterAtomZ(atom, atomZ);
+    CenterAtomZ((*_atom), atomZ);
 
-    AddAtomToSlices(atom, atomX, atomY, atomZ);
+    AddAtomToSlices((*_atom), atomX, atomY, atomZ);
 
     } /* for iatom =0 ... */
   time(&time1);
@@ -430,12 +430,12 @@ void CPotential::MakeSlices(int nlayer,char *fileName, atom *center)
 } // end of make3DSlices
 
 
-void CPotential::AddAtomRealSpace(std::vector<atom>::iterator &atom, 
+void CPotential::AddAtomRealSpace(const atom &_atom, 
                                   float_tt atomX, float_tt atomY, float_tt atomZ)
 {
-  unsigned iatom = atom-m_atoms.begin();
+  //unsigned iatom = atom-m_atoms.begin();
 
-  CenterAtomZ(atom, atomZ);
+  CenterAtomZ(_atom, atomZ);
   
   /* Warning: will assume constant slice thickness ! */
   /* do not round here: atomX=0..dx -> iAtomX=0 */
@@ -443,6 +443,7 @@ void CPotential::AddAtomRealSpace(std::vector<atom>::iterator &atom,
   unsigned iAtomY = (int)floor(atomY/m_dy);
   unsigned iAtomZ = (int)floor(atomZ/m_cz[0]);
 
+  /*
   if (m_displayPotCalcInterval > 0) {
     if ((m_printLevel>=3) && ((iatom+1) % m_displayPotCalcInterval == 0)) {
       printf("adding atom %d [%.3f %.3f %.3f (%.3f)], Z=%d\n",
@@ -450,6 +451,7 @@ void CPotential::AddAtomRealSpace(std::vector<atom>::iterator &atom,
              atom->z,atomZ,atom->Znum);
     }
   }
+  */
 
   for (int iax = -m_iRadX;iax<=m_iRadX;iax++) {
     if (!m_periodicXY) {
@@ -476,7 +478,7 @@ void CPotential::AddAtomRealSpace(std::vector<atom>::iterator &atom,
         {
           // This (virtual) method is meant to be implemented by subclasses, 
           //    for specific functionality varying by dimensionality.
-          _AddAtomRealSpace(atom, x, ix, y, iy, atomZ, iAtomZ);
+          _AddAtomRealSpace(_atom, x, ix, y, iy, atomZ, iAtomZ);
         }
     }
   }

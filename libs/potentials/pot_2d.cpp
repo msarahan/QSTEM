@@ -106,7 +106,7 @@ bool C2DPotential::CheckAtomZInBounds(float_tt atomZ)
 }
 
 
-void C2DPotential::AddAtomToSlices(std::vector<atom>::iterator &atom, float_tt atomX, float_tt atomY,
+void C2DPotential::AddAtomToSlices(const atom &_atom, float_tt atomX, float_tt atomY,
                                                float_tt atomZ)
 {
   // Note that if you override this method, you should do the following check to make sure the atom is in bounds.
@@ -117,10 +117,10 @@ void C2DPotential::AddAtomToSlices(std::vector<atom>::iterator &atom, float_tt a
     }
 
   // Calls parent class method, which in turn calls method below after computing ix, iy, iAtomZ
-  AddAtomRealSpace(atom, atomX, atomY, atomZ);
+  AddAtomRealSpace(_atom, atomX, atomY, atomZ);
 }
 
-void C2DPotential::_AddAtomRealSpace(std::vector<atom>::iterator &atom, 
+void C2DPotential::_AddAtomRealSpace(const atom &_atom, 
                                      float_tt atomBoxX, unsigned int ix, 
                                      float_tt atomBoxY, unsigned int iy, 
                                      float_tt atomZ, unsigned int iAtomZ)
@@ -136,7 +136,7 @@ void C2DPotential::_AddAtomRealSpace(std::vector<atom>::iterator &atom,
   }                
   iz = (iAtomZ+32*m_nslices) % m_nslices;         /* shift into the positive range */
   // x, y are the coordinates in the space of the atom box
-  AtomBoxLookUp(dPot,atom->Znum,atomBoxX,atomBoxY,0, m_tds ? 0 : atom->dw);
+  AtomBoxLookUp(dPot,_atom.Znum,atomBoxX,atomBoxY,0, m_tds ? 0 : _atom.dw);
   float_tt atomBoxZ = (double)(iAtomZ+1)*m_cz[0]-atomZ;
 
   unsigned idx=ix*m_ny+iy;
@@ -158,9 +158,9 @@ void C2DPotential::_AddAtomRealSpace(std::vector<atom>::iterator &atom,
   }
 }
 
-void C2DPotential::CenterAtomZ(std::vector<atom>::iterator &atom, float_tt &z)
+void C2DPotential::CenterAtomZ(const atom &_atom, float_tt &z)
 {
-  CPotential::CenterAtomZ(atom, z);
+  CPotential::CenterAtomZ(_atom, z);
   z += 0.5*m_sliceThickness;
 }
 
