@@ -30,6 +30,11 @@
 namespace QSTEM
 {
   
+/**
+Represents the crystal lattice.  Tracks atomic coordinates, duplicates unit cells, and serves
+as an intermediate format for file type conversions.  Potentials require this class to provide them with
+atomic coordinates for computing Potentials.
+*/
 class QSTEM_HELPER_DLL_EXPORT CCrystal
 {
 private:

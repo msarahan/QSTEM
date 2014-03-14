@@ -33,6 +33,14 @@ class IStructureReader;
 typedef boost::shared_ptr<IStructureReader> StructureReaderPtr;
 typedef StructureReaderPtr (*CreateStructureReaderFn)(const boost::filesystem::path &filename);
 
+/**
+Abstraction to read a crystal structure from a file.  Two things are essential:
+- the matrix describing how the cell can be duplicated
+- the list of atoms
+
+This class is not meant to be used directly.  Instead, use the CCrystal class to manage your
+crystal structures.  It will in turn use a reader appropriate to the filename you specify.
+*/
 class IStructureReader
 {
 public:
@@ -45,6 +53,14 @@ class IStructureWriter;
 typedef boost::shared_ptr<IStructureWriter> StructureWriterPtr;
 typedef StructureWriterPtr (*CreateStructureWriterFn)(const boost::filesystem::path &filename);
 
+/**
+Abstraction to write a crystal structure to a file.  Two things are essential:
+- the matrix describing how the cell can be duplicated
+- the list of atoms
+
+This class is not meant to be used directly.  Instead, use the CCrystal class to manage your
+crystal structures.  It will in turn use a writer appropriate to the filename you specify.
+*/
 class IStructureWriter
 {
 public:
@@ -53,30 +69,7 @@ public:
   virtual int Write(std::vector<atom> &atoms, const RealVector &Mm)=0;
 };
 
-/*--------------------- ReadLine() -----------------------*/
-/*
-read a full line from a file and 
-return length of line read
 
-to bad this looks like Pascal but its the easiest
-way to read just whole line because fscanf() ignores
-end of line characters
-
-fpread = pointer to file
-cMax = length of data buffer cRead
-cRead = char[] buffer to read into
-mesg = error message to print if not successful
-*/
-inline int ReadLine( FILE* fpRead, char* cRead, int cMax, const char *mesg )
-{
-  if( fgets( cRead, cMax, fpRead) == NULL ) {
-    return 0;
-    /*   printf("error reading input file: %s\n", mesg);
-         exit( 0 );
-    */
-  }
-  return( strlen( cRead ) );
-}  /* end ReadLine */
 
 }
 #endif

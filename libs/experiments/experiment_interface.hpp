@@ -25,10 +25,19 @@
 namespace QSTEM
 {
 
+/**
+Experiments are meant to be outlines and assemblies of simulation components.  They
+tie together lesser parts, and take care of how the beam starts and where/how it gets detected.
+For example, a multislice experiment will start by creating Wavefunction and Crystal objects.  
+From there, it will compute the Potential using the Crystal.  It will take care of propagating the Wavefunction
+through the Potential, and finally save output.
+
+Experiments also encapsulate state such as probe position and any averaging.
+*/
 class IExperiment
 {
 public:
-  virtual void DisplayParams(){};
+  virtual void DisplayParams(){}; 
   virtual void CheckParams()=0;
   virtual void DescribeParams()=0;
   virtual void Run()=0;

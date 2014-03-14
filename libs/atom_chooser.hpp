@@ -158,7 +158,10 @@ private:
 
 
 /**
-This class gets used to provide
+Provide random choices from among atoms (or vacancies) that share a site.
+
+To use this class, instantiate it with a vector of atoms (these should share a site, i.e., 
+	have the same x, y, z values), then call the Choose method when you want a random atom.
 */
 
 class AtomChooser
@@ -166,9 +169,10 @@ class AtomChooser
 public:
 	AtomChooser(std::vector<atom> siteAtomList);
 	atom &Choose(); // returns a random choice from siteAtomList
+private:
 	RealVector GetOccupancyVector();
 	float_tt SumOccupancy();
-private:
+
 	alias_method m_alias; // alias method object, used to choose an integer index of which atom
 	std::vector<atom> m_atoms; // list of atoms for this site
 };

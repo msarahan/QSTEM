@@ -26,6 +26,10 @@
 namespace QSTEM
 {
 
+/**
+STEM detector definition - these detectors integrate an annular or circular area,
+outputting a single floating point value.
+*/
 class QSTEM_HELPER_DLL_EXPORT Detector {
   ImageIOPtr m_imageIO;
 public:

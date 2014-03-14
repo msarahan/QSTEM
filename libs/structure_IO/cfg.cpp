@@ -22,6 +22,31 @@
 
 #include "readparams.hpp"
 
+/*--------------------- ReadLine() -----------------------*/
+/*
+read a full line from a file and 
+return length of line read
+
+to bad this looks like Pascal but its the easiest
+way to read just whole line because fscanf() ignores
+end of line characters
+
+fpread = pointer to file
+cMax = length of data buffer cRead
+cRead = char[] buffer to read into
+mesg = error message to print if not successful
+*/
+inline int ReadLine( FILE* fpRead, char* cRead, int cMax, const char *mesg )
+{
+  if( fgets( cRead, cMax, fpRead) == NULL ) {
+    return 0;
+    /*   printf("error reading input file: %s\n", mesg);
+         exit( 0 );
+    */
+  }
+  return( strlen( cRead ) );
+}  /* end ReadLine */
+
 namespace QSTEM
 {
 

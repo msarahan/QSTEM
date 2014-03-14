@@ -33,6 +33,11 @@
 namespace QSTEM
 {
 
+/**
+Helper class for image input/output.  This class stores an image size and initializes 
+reader/writer classes appropriately.  It provides several API options depending on what exact details
+you want to pass to the reader/writer plugin.
+*/
 class CImageIO {
   int m_nx,m_ny;
   char m_buf[200];  // General purpose temporary text buffer

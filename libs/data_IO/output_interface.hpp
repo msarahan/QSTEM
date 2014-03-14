@@ -34,6 +34,13 @@ class IDataWriter;
 typedef boost::shared_ptr<IDataWriter> DataWriterPtr;
 typedef DataWriterPtr (*CreateDataWriterFn)();
 
+/**
+Abstracts data writing.  Data here means image output - any kind of diffraction pattern, wavefunction,
+detector output image, etc.
+
+Generally, people should not use this class directly.  Instead, prefer the CImageIO class defined in 
+imagelib_fftw3.hpp, which represents a way of storing parameters to make your function calls shorter.
+*/
 class IDataWriter
 {
 public:

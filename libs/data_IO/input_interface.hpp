@@ -35,6 +35,14 @@ class IDataReader;
 typedef boost::shared_ptr<IDataReader> DataReaderPtr;
 typedef DataReaderPtr (*CreateDataReaderFn)();
 
+/**
+Abstracts data reading, where data is meant to be some kind of image, generally.  This is used, for example, for loading
+in pre-calculated potential slices; for averaging diffraction patterns across multiple TDS runs; for loading wavefunctions
+before propagating through sub-slabs.
+
+Generally, people should not use this class directly.  Instead, prefer the CImageIO class defined in 
+imagelib_fftw3.hpp, which represents a way of storing parameters to make your function calls shorter.
+*/
 class IDataReader
 {
 public:

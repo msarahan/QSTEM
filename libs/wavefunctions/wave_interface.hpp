@@ -35,8 +35,15 @@ class IWave;
 typedef boost::shared_ptr<IWave> WavePtr;
 typedef WavePtr (*CreateWaveFn)(const ConfigReaderPtr &reader);
 
-// a structure for a probe/parallel beam wavefunction.
-// Separate from mulsliceStruct for parallelization.
+/**
+Wavefunctions represent the state of the beam as it propagates through the virtual microscope.  
+Each probe position represents a different Wavefunction.  Wavefunctions share 
+resolution with the Potential: a pixel in the Wavefunction is the same physical size 
+as a pixel in a Potential slice.
+
+These are natural targets for parallelization: each probe position can have its own Wavefunction,
+while all of them can share the potential.
+*/
 class IWave
 {
 public:

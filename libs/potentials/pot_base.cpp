@@ -232,6 +232,17 @@ void CPotential::Refresh()
   // 
 }
 
+/**
+Load a pre-calculated potential file into memory.  This resizes slices as necessary to fit the 
+contents of the specified file.  The number of slices to be read is determined by the number of slices
+setting in the config file.  This function will attempt to find files numbered accordingly to that number of slices.
+
+@param fileName the base filename of each slice.  For example, potential.img.  This determines two important things:
+		  The filename prefix (this function will append numerical indices as necessary) and the file type to read from
+		  ( determined by the extension of this string)
+@param subSlabIdx the index of the subslab from which the slices are read.  This is effectively an offset.
+          Reading starts at index m_nslices*subSlabIdx.
+*/
 void CPotential::ReadPotential(std::string &fileName, unsigned subSlabIdx)
 {
   /*************************************************************************
@@ -256,15 +267,13 @@ void CPotential::ReadSlice(const std::string &fileName, ComplexVector &slice, un
   
 }
 
+/**        
+setup the slices with their start and end positions.  Sizes arrays appropriately.
+*/
 void CPotential::SliceSetup()
 {
   FILE *sliceFp;
   char buf[BUF_LEN];
-  /**************************************************************
-   *        setup the slices with their start and end positions
-   *        then loop through all the atoms and add their potential to
-   *        the slice that their potential reaches into (up to RMAX)
-   *************************************************************/
        
   for (unsigned i=1;i<m_nslices;i++) {
     if (sliceFp == NULL) m_cz[i] = m_cz[0];
@@ -293,6 +302,14 @@ void CPotential::SliceSetup()
   ResizeSlices();
 }
 
+/**
+Get the complex value of a pixel of the potential.
+
+@param iz slice index
+@param ix x coordinate in given slice
+@param iy y coordinate in given slice
+@result value of potential at given coordinate
+*/
 complex_tt CPotential::GetSlicePixel(unsigned iz, unsigned ix, unsigned iy)
 {
   unsigned idx = iy*m_nx + ix;
