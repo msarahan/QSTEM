@@ -29,14 +29,14 @@ struct CrystalFixture {
   CrystalFixture()
   {
     configReader = QSTEM::CConfigReaderFactory::Get()->GetReader("stem_STO_4x4.qsc");
-    cryst = QSTEM::StructurePtr(new CCrystal(configReader));
+    cryst = QSTEM::CrystalPtr(new CCrystal(configReader));
     //std::cout << "setup plane wave fixture" << std::endl; 
   }
   ~CrystalFixture()
   { 
     //std::cout << "teardown plane wave fixture" << std::endl; 
   }
-  QSTEM::StructurePtr cryst;
+  QSTEM::CrystalPtr cryst;
   QSTEM::ConfigReaderPtr configReader;
 };
 

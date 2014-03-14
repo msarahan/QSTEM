@@ -47,4 +47,9 @@ BOOST_AUTO_TEST_CASE(TestAtomBoxGeneration)
 	//pot->GetAtomPotential3D();
 }
 
+BOOST_AUTO_TEST_CASE(testSliceSetup)
+{
+	pot->SliceSetup(0,10,0,10);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

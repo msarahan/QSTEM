@@ -270,9 +270,9 @@ void CPotential::ReadSlice(const std::string &fileName, ComplexVector &slice, un
 /**        
 setup the slices with their start and end positions.  Sizes arrays appropriately.
 */
-void CPotential::SliceSetup()
+void CPotential::SliceSetup(float_tt min_x, float_tt max_x, float_tt min_y, float_tt max_y)
 {
-  FILE *sliceFp;
+  FILE *sliceFp=NULL;
   char buf[BUF_LEN];
        
   for (unsigned i=1;i<m_nslices;i++) {
@@ -289,13 +289,12 @@ void CPotential::SliceSetup()
   // If we are going to read the potential, then we need to size the slices according to the first read pot slice
   if (m_readPotential)
     {
+		// TODO: handle reading potential properly
     }
   // If we are going to calculate the potential, then we need to size the slices according to the size of the
   //    structure and the corresponding resolution.
   else
     {
-      float_tt max_x, min_x, max_y, min_y;
-      m_crystal->GetCrystalBoundaries(min_x, max_x, min_y, max_y);
       m_nx = ceil((max_x-min_x)/m_dx);
       m_ny = ceil((max_y-min_y)/m_dy);
     }
@@ -360,7 +359,7 @@ void CPotential::MakeSlices(int nlayer,char *fileName, atom *center)
   //ReadAtoms();
   //} /* end of if divCount==cellDiv-1 ... */
 
-  SliceSetup();
+  //SliceSetup();
 
   // reset the potential to zero:
   memset((void *)&(m_trans[0][0][0]),0,

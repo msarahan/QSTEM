@@ -63,6 +63,8 @@ public:
   virtual void WriteProjectedPotential()=0;
   virtual void GetSlice(unsigned idx, ComplexVector &vec)=0;
   virtual complex_tt GetSlicePixel(unsigned iz, unsigned ix, unsigned iy)=0;
+
+  virtual void SliceSetup(float_tt min_x, float_tt max_x, float_tt min_y, float_tt max_y)=0; // calculate slice size, resize arrays accordingly
 };
 
 }

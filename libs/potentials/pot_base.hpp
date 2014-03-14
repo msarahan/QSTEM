@@ -79,7 +79,7 @@ public:
   // Set number of slices.  Implicitly sets m_thickness to the sub-slab height divided by nslices, and empties m_cz.
   void SetNSlices(unsigned slices);
   // Sets the structure being used to calculate the potential.
-  void SetStructure(StructurePtr structure);
+  void SetStructure(CrystalPtr structure);
 
 
   void WriteSlice(unsigned idx);
@@ -93,8 +93,9 @@ public:
   bool m_potential3D;
   float_tt m_atomRadius;
 
+  void SliceSetup(float_tt min_x, float_tt max_x, float_tt min_y, float_tt max_y);
+
 protected:
-  void SliceSetup();
   void ResizeSlices();
   void ReadSlice(const std::string &fileName, ComplexVector &slice, unsigned idx);
   virtual void _AddAtomRealSpace(std::vector<atom>::iterator &atom, 
@@ -104,7 +105,7 @@ protected:
 
 
   ImageIOPtr m_imageIO;
-  StructurePtr m_crystal;
+  CrystalPtr m_crystal;
   std::vector<ComplexVector> m_trans; //  The 3D specimen potential array as a vector of 1D vectors
   //complex_tt ***m_trans;    //  The 3D specimen potential array
   bool m_currentPotential;  // Indicates whether computed potential matches current parameters.  

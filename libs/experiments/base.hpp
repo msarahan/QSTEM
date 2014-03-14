@@ -90,7 +90,7 @@ protected:
 
   boost::filesystem::path m_outputLocation;
 
-  StructurePtr m_crystal;  // The structure of the sample (atom positions)
+  CrystalPtr m_crystal;  // The structure of the sample (atom positions)
   WavePtr m_wave;		   // The electron wave (this may be copied for multiprocessing)
   PotPtr m_potential;      // The sample potential
 

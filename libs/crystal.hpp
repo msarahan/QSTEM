@@ -146,7 +146,7 @@ protected:
   static int AtomCompareZYX(const void *atPtr1,const void *atPtr2);
 };
 
-typedef boost::shared_ptr<CCrystal> StructurePtr;
+typedef boost::shared_ptr<CCrystal> CrystalPtr;
 
 }
 #endif
