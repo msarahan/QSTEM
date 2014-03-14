@@ -171,15 +171,53 @@ CCfgWriter::~CCfgWriter()
 }
 
 int CCfgWriter::Write(std::vector<atom> &atoms, std::string run_id, float_tt ax, float_tt by, float_tt cz, 
-	  float_tt alpha, float_tt beta, float_tt gamma) {
-  int j;
-  std::string elem;
-
+	  float_tt alpha, float_tt beta, float_tt gamma) 
+{
   if (atoms.size() < 1) {
     printf("Atom array empty - no file written\n");
     return 1;
   }
   
+  FILE *fp = OpenFile(run_id);
+
+  fprintf(fp,"Number of particles = %d\n",atoms.size());
+  fprintf(fp,"A = 1.0 Angstrom (basic length-scale)\n");
+  fprintf(fp,"H0(1,1) = %g A\nH0(1,2) = 0 A\nH0(1,3) = 0 A\n",ax);
+  fprintf(fp,"H0(2,1) = 0 A\nH0(2,2) = %g A\nH0(2,3) = 0 A\n",by);
+  fprintf(fp,"H0(3,1) = 0 A\nH0(3,2) = 0 A\nH0(3,3) = %g A\n",cz);
+  fprintf(fp,".NO_VELOCITY.\nentry_count = 6\n");
+
+  WriteAtoms(fp, atoms);
+  fclose(fp);
+
+  return 1;
+}
+
+int CCfgWriter::Write(std::vector<atom> &atoms, const RealVector &Mm)
+{
+ if (atoms.size() < 1) {
+    printf("Atom array empty - no file written\n");
+    return 1;
+  }
+  
+ std::string run_id="";
+  FILE *fp = OpenFile(run_id);
+
+  fprintf(fp,"Number of particles = %d\n",atoms.size());
+  fprintf(fp,"A = 1.0 Angstrom (basic length-scale)\n");
+  fprintf(fp,"H0(1,1) = %g A\nH0(1,2) = %g A\nH0(1,3) = %g A\n",Mm[0], Mm[1], Mm[2]);
+  fprintf(fp,"H0(2,1) = %g A\nH0(2,2) = %g A\nH0(2,3) = %g A\n",Mm[3], Mm[4], Mm[5]);
+  fprintf(fp,"H0(3,1) = %g A\nH0(3,2) = %g A\nH0(3,3) = %g A\n",Mm[6], Mm[7], Mm[8]);
+  fprintf(fp,".NO_VELOCITY.\nentry_count = 6\n");
+
+  WriteAtoms(fp, atoms);
+  fclose(fp);
+
+  return 1;
+}
+
+FILE *CCfgWriter::OpenFile(const std::string &run_id)
+{
   std::string outputFile = m_basePath.stem().string();
   if (run_id!="")
     {
@@ -191,23 +229,19 @@ int CCfgWriter::Write(std::vector<atom> &atoms, std::string run_id, float_tt ax,
   if( fp == NULL ) {
     printf("Cannot open file %s\n",outputFile.c_str());
   }
+  return fp;
+}
 
-  fprintf(fp,"Number of particles = %d\n",atoms.size());
-  fprintf(fp,"A = 1.0 Angstrom (basic length-scale)\n");
-  fprintf(fp,"H0(1,1) = %g A\nH0(1,2) = 0 A\nH0(1,3) = 0 A\n",ax);
-  fprintf(fp,"H0(2,1) = 0 A\nH0(2,2) = %g A\nH0(2,3) = 0 A\n",by);
-  fprintf(fp,"H0(3,1) = 0 A\nH0(3,2) = 0 A\nH0(3,3) = %g A\n",cz);
-  fprintf(fp,".NO_VELOCITY.\nentry_count = 6\n");
-
-  //printf("ax: %g, by: %g, cz: %g n: %d\n",m_ax,m_by,m_cz,atoms.size());
-
-
+void CCfgWriter::WriteAtoms(FILE *fp, std::vector<atom> atoms)
+{
+  std::string elem;
+  size_t natoms=atoms.size();
   elem = getSymbol(atoms[0].Znum);
   fprintf(fp,"%g\n%s\n",atoms[0].mass,elem.c_str());
   fprintf(fp,"%g %g %g %g %.4f %.4f\n",atoms[0].x,atoms[0].y,atoms[0].z,
           atoms[0].dw,atoms[0].occ,atoms[0].q);
 
-  for (j=1;j<atoms.size();j++) {
+  for (size_t j=1;j<natoms;j++) {
     if (atoms[j].Znum != atoms[j-1].Znum) {
 		elem = getSymbol(atoms[j].Znum);
       fprintf(fp,"%g\n%s\n",atoms[j].mass,elem.c_str());
@@ -217,11 +251,7 @@ int CCfgWriter::Write(std::vector<atom> &atoms, std::string run_id, float_tt ax,
             atoms[j].dw,atoms[j].occ,atoms[j].q);
     // if (atoms[j].occ != 1) printf("Atom %d: occ = %g\n",j,atoms[j].occ);
   }
-  fclose(fp);
-
-  return 1;
 }
-
 
 #define MIN_EDGE_LENGTH 5.18 /* minimal allowed edge length in A
 * going below this limit will crash 

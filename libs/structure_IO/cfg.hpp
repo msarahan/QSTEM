@@ -59,9 +59,11 @@ public:
 
   int Write(std::vector <atom> &atoms, std::string run_id, float_tt ax, float_tt by, float_tt cz, 
 	  float_tt alpha, float_tt beta, float_tt gamma);
+  int Write(std::vector<atom> &atoms, const RealVector &Mm);
 private:
   boost::filesystem::path m_basePath;
-
+  FILE *OpenFile(const std::string &run_id);
+  void WriteAtoms(FILE *fp, std::vector<atom> atoms);
 private:
   friend class CStructureWriterFactory;
   // Create an instance of this class, wrapped in a shared ptr

@@ -21,9 +21,8 @@
 #include <stdlib.h>
 
 #include "crystal.hpp"
-
 #include "memory_fftw3.hpp"
-#include "random.hpp"
+#include "atom_chooser.hpp"
 
 #include "structure_factories.hpp"
 
@@ -73,12 +72,13 @@ CCrystal::CCrystal(ConfigReaderPtr &configReader)
   m_structureReader = CStructureReaderFactory::Get()->GetReader(fileName);
 
   // Read the cell parameters
-  m_Mm.resize(9);
-  m_structureReader->ReadCellParams(m_Mm);
+  m_structureReader->ReadCellParams(m_cellMm);
   CalculateCellDimensions();
 
   // Read in the initial atomic positions from the file (do duplication, tilt, and shaking later)
   m_structureReader->ReadAtoms(m_baseAtoms);
+  // Updates supercell size based on cell dimensions
+  SetNCells(m_nCellX, m_nCellX, m_nCellZ);
   if (m_printLevel>=3)
     printf("Read %d atoms, tds: %d\n",m_atoms.size(),m_tds);
 
@@ -137,7 +137,7 @@ void CCrystal::Init(unsigned run_number)
    *********************************************************/
   //std::sort(m_atoms.begin(), m_atoms.end(), &CCrystal::AtomCompareZnum); 
   qsort(&m_atoms[0],m_atoms.size(),sizeof(atom),&CCrystal::AtomCompareZnum);
-  WriteStructure(run_number);
+  WriteSuperCell(run_number);
 }
 
 void CCrystal::DisplayParams()
@@ -173,6 +173,10 @@ void CCrystal::SetNCells(unsigned nx, unsigned ny, unsigned nz)
 	m_superAx=nx*m_cellAx;
 	m_superBy=ny*m_cellBy;
 	m_superCz=nz*m_cellCz;
+	m_superMm=RealVector(9,0);
+	m_superMm[0]=m_superAx;
+	m_superMm[4]=m_superBy;
+	m_superMm[8]=m_superCz;
 	// TODO: should this ever be false?
 	bool handleVacancies = true;
 	ReplicateUnitCell(handleVacancies);
@@ -336,7 +340,7 @@ void CCrystal::ReadUnitCell(bool handleVacancies)
 void CCrystal::TiltCell(float_tt tilt_x, float_tt tilt_y, float_tt tilt_z)
 {
   size_t i, natom=m_atoms.size();
-  ConvertCoordinates(CARTESIAN);
+  ConvertCoordinates(CARTESIAN, m_cellMm);
   /***************************************************************
    * Now let us tilt around the center of the full crystal
    */   
@@ -345,9 +349,9 @@ void CCrystal::TiltCell(float_tt tilt_x, float_tt tilt_y, float_tt tilt_z)
   float_tt bcY = m_nCellY/2.0;
   float_tt bcZ = m_nCellZ/2.0;
   RealVector u(3,0);
-  u[0] = m_Mm[0]*bcX+m_Mm[3]*bcY+m_Mm[6]*bcZ;
-  u[1] = m_Mm[1]*bcX+m_Mm[4]*bcY+m_Mm[7]*bcZ;
-  u[2] = m_Mm[2]*bcX+m_Mm[5]*bcY+m_Mm[8]*bcZ;
+  u[0] = m_superMm[0]*bcX+m_superMm[3]*bcY+m_superMm[6]*bcZ;
+  u[1] = m_superMm[1]*bcX+m_superMm[4]*bcY+m_superMm[7]*bcZ;
+  u[2] = m_superMm[2]*bcX+m_superMm[5]*bcY+m_superMm[8]*bcZ;
   float_tt boxCenterX = u[0];
   float_tt boxCenterY = u[1];
   float_tt boxCenterZ = u[2];
@@ -362,9 +366,9 @@ void CCrystal::TiltCell(float_tt tilt_x, float_tt tilt_y, float_tt tilt_z)
   for (unsigned icx=0;icx<=m_nCellX;icx+=m_nCellX) 
     for (unsigned icy=0;icy<=m_nCellY;icy+=m_nCellY) 
       for (unsigned icz=0;icz<=m_nCellZ;icz+=m_nCellZ) {
-        u[0] = m_Mm[0]*(icx-bcX)+m_Mm[3]*(icy-bcY)+m_Mm[6]*(icz-bcZ);
-        u[1] = m_Mm[1]*(icx-bcX)+m_Mm[4]*(icy-bcY)+m_Mm[7]*(icz-bcZ);
-        u[2] = m_Mm[2]*(icx-bcX)+m_Mm[5]*(icy-bcY)+m_Mm[8]*(icz-bcZ);
+        u[0] = m_cellMm[0]*(icx-bcX)+m_cellMm[3]*(icy-bcY)+m_cellMm[6]*(icz-bcZ);
+        u[1] = m_cellMm[1]*(icx-bcX)+m_cellMm[4]*(icy-bcY)+m_cellMm[7]*(icz-bcZ);
+        u[2] = m_cellMm[2]*(icx-bcX)+m_cellMm[5]*(icy-bcY)+m_cellMm[8]*(icz-bcZ);
         RotateVect(u,u,m_ctiltx,m_ctilty,m_ctiltz);  // simply applies rotation matrix
         // x = u[0]+boxCenterXrot; y = u[1]+boxCenterYrot; z = u[2]+boxCenterZrot;
         float_tt x = u[0]+boxCenterX; 
@@ -419,31 +423,29 @@ void CCrystal::TiltCell(float_tt tilt_x, float_tt tilt_y, float_tt tilt_z)
 // Uses m_Mm to calculate ax, by, cz, and alpha, beta, gamma
 void CCrystal::CalculateCellDimensions()
 {
-  m_cellAx = sqrt(m_Mm[0]*m_Mm[0]+m_Mm[1]*m_Mm[1]+m_Mm[2]*m_Mm[2]);
-  m_cellBy = sqrt(m_Mm[3]*m_Mm[3]+m_Mm[4]*m_Mm[4]+m_Mm[5]*m_Mm[5]);
-  m_cellCz = sqrt(m_Mm[6]*m_Mm[6]+m_Mm[7]*m_Mm[7]+m_Mm[8]*m_Mm[8]);
-  m_cGamma = atan2(m_Mm[4],m_Mm[3]);
-  m_cBeta = acos(m_Mm[6]/m_cellCz);
-  m_cAlpha = acos(m_Mm[7]*sin(m_cGamma)/m_cellCz+cos(m_cBeta)*cos(m_cGamma));
+  m_cellAx = sqrt(m_cellMm[0]*m_cellMm[0]+m_cellMm[1]*m_cellMm[1]+m_cellMm[2]*m_cellMm[2]);
+  m_cellBy = sqrt(m_cellMm[3]*m_cellMm[3]+m_cellMm[4]*m_cellMm[4]+m_cellMm[5]*m_cellMm[5]);
+  m_cellCz = sqrt(m_cellMm[6]*m_cellMm[6]+m_cellMm[7]*m_cellMm[7]+m_cellMm[8]*m_cellMm[8]);
+  m_cGamma = atan2(m_cellMm[4],m_cellMm[3]);
+  m_cBeta = acos(m_cellMm[6]/m_cellCz);
+  m_cAlpha = acos(m_cellMm[7]*sin(m_cGamma)/m_cellCz+cos(m_cBeta)*cos(m_cGamma));
   m_cGamma /= (float)PI180;
   m_cBeta  /= (float)PI180;
   m_cAlpha /= (float)PI180;
-  // Updates supercell size based on cell dimensions
-  SetNCells(m_nCellX, m_nCellX, m_nCellZ);
 }
 
-void CCrystal::ConvertCoordinates(CCrystal::CoordinateType coord_type)
+void CCrystal::ConvertCoordinates(CCrystal::CoordinateType coord_type, const RealVector &Mm)
 {
-	RealVector Mm(9,0);
+	RealVector _Mm(9,0);
 	RealVector tmp_vec, transformed_vec;
 	size_t natoms = m_atoms.size();
 	if (coord_type==m_coordinateSpace)
 		return;
 	if (coord_type==CARTESIAN)
-		Mm = m_Mm;
+		_Mm = Mm;
 	else
 	{
-		Inverse_3x3(Mm, m_Mm);
+		Inverse_3x3(_Mm, Mm);
 	}
 
 	// TODO: Is it worthwhile to create these two vectors, for the sake of speed?  or better to save memory?
@@ -458,7 +460,7 @@ void CCrystal::ConvertCoordinates(CCrystal::CoordinateType coord_type)
 		tmp_vec[i*3+2]=m_atoms[i].z;
 	}
 	// matrix product of cell matrix with coordinates
-	MatrixProduct(Mm,3,3,tmp_vec,3,m_atoms.size(),transformed_vec);
+	MatrixProduct(_Mm,3,3,tmp_vec,3,m_atoms.size(),transformed_vec);
 	// place transformed coordinates in atoms vector
 	for (size_t i=0; i<natoms; i++)
 	{
@@ -504,7 +506,7 @@ void CCrystal::TiltBoxed(int ncoord,bool handleVacancies) {
   // We need to copy the transpose of m_Mm to Mm.
   // we therefore cannot use the following command:
   // memcpy(Mm[0],m_Mm[0],3*3*sizeof(double));
-  for (ix=0;ix<3;ix++) for (iy=0;iy<3;iy++) Mm[ix*3+iy]=m_Mm[iy*3+ix];
+  for (ix=0;ix<3;ix++) for (iy=0;iy<3;iy++) Mm[ix*3+iy]=m_cellMm[iy*3+ix];
 
   memcpy(&MmOrig[0],&Mm[0],3*3*sizeof(double));
   Inverse_3x3(MmOrigInv,MmOrig);
@@ -697,6 +699,43 @@ void CCrystal::TiltBoxed(int ncoord,bool handleVacancies) {
   PhononDisplacement(u,iatom,ix,iy,iz,newAtom,false);
 }  // end of 'tiltBoxed(...)'
 
+/**
+Checks for atoms that share a site, or that partially occupy a site.  These are then fed into
+an AtomChooser object, which randomly returns atoms according to their occupancy.
+*/
+void CCrystal::DistinguishSites(std::vector< std::vector<atom> > &sites)
+{
+  sites.clear();
+  // make a copy of the base atoms
+  std::vector<atom> baseAtoms(m_baseAtoms);
+  // Look for atoms which share the same position
+  // a "site" is a vector of atoms which share position
+  while (baseAtoms.size()>0)
+  {
+	  std::vector<atom> site;
+	  // take the back atom and store it - it's our first site atom
+	  atom _atom = baseAtoms.back();
+	  // delete it so we don't find it later
+	  baseAtoms.pop_back();
+	  // add the first atom to our site
+	  site.push_back(_atom);
+	  // loop over remaining atoms, looking for ones that share position
+	  std::vector<atom>::iterator baseAtom=baseAtoms.begin(), end=baseAtoms.end();
+	  for (baseAtom; baseAtom!=baseAtoms.end(); )
+	  {
+		  if ((fabs((*baseAtom).x-_atom.x) < 1e-6) && (fabs((*baseAtom).y-_atom.y) < 1e-6) && (fabs((*baseAtom).z-_atom.z) < 1e-6)) 
+		  {
+			  site.push_back((*baseAtom));
+			  baseAtoms.erase(baseAtom);
+		  }
+		  else
+		  {
+			  ++baseAtom;
+		  }
+	  }
+	  sites.push_back(site);
+  }
+}
 
 /**
 Replicates the unit cell NcellX x NCellY x NCellZ times
@@ -704,116 +743,59 @@ Replicates the unit cell NcellX x NCellY x NCellZ times
   on same position.
 */
 void CCrystal::ReplicateUnitCell(int handleVacancies) {
-  int i,j,i2,jChoice,ncx,ncy,ncz,icx,icy,icz;
-  int jequal;    // Number of atoms that share a position (mixed position if > 1)
-  int jVac;  // Number of vacancies total in replicated supercell
-  int jCell; // Offset (in number of coordinates) from origin cell
-  int 	atomKinds = 0;
-  double totOcc;
-  double choice,lastOcc;
+  // number of cells
+  int ncx = m_nCellX;
+  int ncy = m_nCellY;
+  int ncz = m_nCellZ;
 
-  ncx = m_nCellX;
-  ncy = m_nCellY;
-  ncz = m_nCellZ;
-  RealVector u(3,0);
-  //u = (double *)malloc(3*sizeof(double));
+  // Reset position type to Fractional, since we're going to duplicate from the fractional original unit cell
+  m_coordinateSpace=FRACTIONAL;
 
   m_atoms.resize(ncx*ncy*ncz*m_baseAtoms.size());
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Look for atoms which share the same position:
-  jVac = 0;  // no atoms have been removed yet
-  for (i=m_baseAtoms.size()-1;i>=0;) {
+  std::vector< std::vector<atom> > sites;
+  // Matches atoms that share a position (collection of these is a "site")
+  DistinguishSites(sites);
+  std::vector< std::vector<atom> >::iterator site=sites.begin(), end_site=sites.end();
+  // Loop over possible sites for atoms (each has an associated probability of which atom to choose)
+  for (site; site!=end_site; ++site)
+  {
+	// This object randomly chooses available atoms, according to the weighted distribution given by their occupancy
+	AtomChooser chooser((*site));
 
-    ////////////////
-    if ((handleVacancies) && (m_atoms[i].Znum > 0)) {
-      totOcc = m_atoms[i].occ;
-      for (jequal=i-1;jequal>=0;jequal--) {
-        // if there is another atom that comes close to within 0.1*sqrt(3) A we will increase 
-        // the total occupany and the counter jequal.
-        if ((fabs(m_atoms[i].x-m_atoms[jequal].x) < 1e-6) && (fabs(m_atoms[i].y-m_atoms[jequal].y) < 1e-6) && (fabs(m_atoms[i].z-m_atoms[jequal].z) < 1e-6)) {
-          totOcc += m_atoms[jequal].occ;
-        }
-        else break;
-      } // jequal-loop
-    }
-    else {
-      jequal = i-1;
-      totOcc = 1;
-    }
+    /* replicate this site ncx,ncy,ncz times, choosing atom appropriately each time: */
 
-    ////////////////
-    /* replicate unit cell ncx,y,z times: */
+    for (int icx=0;icx<ncx;icx++) {
+      for (int icy=0;icy<ncy;icy++) {
+        for (int icz=0;icz<ncz;icz++) {
+		  size_t cell_index = (icz+icy*ncz+icx*ncy*ncz)*sites.size()+(site-sites.begin());
 
-    for (icx=0;icx<ncx;icx++) {
-      for (icy=0;icy<ncy;icy++) {
-        for (icz=0;icz<ncz;icz++) {
-          jCell = (icz+icy*ncz+icx*ncy*ncz)*m_baseAtoms.size();
-          j = jCell+i;
-          /* We will also add the phonon displacement to the atomic positions now: */
-          m_atoms[j].dw = m_baseAtoms[i].dw;
-          m_atoms[j].occ = m_baseAtoms[i].occ;
-          m_atoms[j].q = m_baseAtoms[i].q;
-          m_atoms[j].Znum = m_baseAtoms[i].Znum; 
-		  m_atoms[j].mass = m_baseAtoms[i].mass;
-          
-          // Now is the time to remove atoms that are on the same position or could be vacancies:
-          // if we encountered atoms in the same position, or the occupancy of the current atom is not 1, then
-          // do something about it:
-          jChoice = i;
-          if ((totOcc < 1) || (jequal < i-1)) 
-            { // found atoms at equal positions or an occupancy less than 1!
-              // ran1 returns a uniform random deviate between 0.0 and 1.0 exclusive of the endpoint values. 
-              // 
-              // if the total occupancy is less than 1 -> make sure we keep this
-              // if the total occupancy is greater than 1 (unphysical) -> rescale all partial occupancies!
-              if (totOcc < 1.0) choice = ran1();   
-              else choice = totOcc*ran1();
-              // printf("Choice: %g %g %d, %d %d\n",totOcc,choice,j,i,jequal);
-              lastOcc = 0;
-              for (i2=i;i2>jequal;i2--) {
-                m_atoms[jCell+i2].dw = m_baseAtoms[i2].dw;
-                m_atoms[jCell+i2].occ = m_baseAtoms[i2].occ;
-                m_atoms[jCell+i2].q = m_baseAtoms[i2].q;
-                m_atoms[jCell+i2].Znum = m_baseAtoms[i2].Znum; 
-				m_atoms[jCell+i2].mass = m_baseAtoms[i2].mass;
+		  // choose which atom to actually include
+		  m_atoms[cell_index]=chooser.Choose();
 
-                // if choice does not match the current atom:
-                // choice will never be 0 or 1(*totOcc) 
-                if ((choice <lastOcc) || (choice >=lastOcc+m_baseAtoms[i2].occ)) {
-                  // printf("Removing atom %d, Z=%d\n",jCell+i2,atoms[jCell+i2].Znum);
-                  m_atoms[jCell+i2].Znum =  0;  // vacancy
-                  jVac++;
-                }
-                else {
-                  jChoice = i2;
-                }
-                lastOcc += m_baseAtoms[i2].occ;
-              }
-            }          
-          // this function does nothing, if m_tds == 0
-		  // 20140303 MCS Move displacement to its own dedicated function
-          
-		  //PhononDisplacement(u,jChoice,icx,icy,icz,m_atoms[jChoice],false);
-
-          for (i2=i;i2>jequal;i2--) {
-            m_atoms[jCell+i2].x = m_baseAtoms[i2].x+icx+u[0];
-            m_atoms[jCell+i2].y = m_baseAtoms[i2].y+icy+u[1];
-            m_atoms[jCell+i2].z = m_baseAtoms[i2].z+icz+u[2];
-          }
-		  
+		  // add offset for this duplication
+          m_atoms[cell_index].x += icx;
+          m_atoms[cell_index].y += icy;
+          m_atoms[cell_index].z += icz;        
         }  // for (icz=ncz-1;icz>=0;icz--)
       } // for (icy=ncy-1;icy>=0;icy--) 
     } // for (icx=ncx-1;icx>=0;icx--)
-    i=jequal;
-  } // for (i=ncoord-1;i>=0;)
-  if ((jVac > 0 ) &&(m_printLevel)) printf("Removed %d atoms because of occupancies < 1 or multiple atoms in the same place\n",jVac);
+  } // end loop over sites
+  // convert positions to Cartesian coordinates (from fractional)
+  //    Do this with the cell Mm so that non-cubic structures are placed in the right place, and so that we
+  //    get rid of the greater-than-one fractional positions that we have right now.
+  ConvertCoordinates(CARTESIAN, m_cellMm);
 }
 
+/**
+Apply a random displacement (Einstein model of phonons) to each atom.
+*/
 void CCrystal::DisplaceAtoms()
 {
   std::vector<atom>::iterator at=m_atoms.begin(), end=m_atoms.end();
   RealVector u(3,0);
+
+  ConvertCoordinates(CARTESIAN, m_superMm);
   
   for (at; at!=end; ++at)
     {
@@ -832,18 +814,11 @@ void CCrystal::EinsteinDisplacement(RealVector&u, atom &_atom)
     u[0] = (wobble*k_sq3 * gasdev());
     u[1] = (wobble*k_sq3 * gasdev());
     u[2] = (wobble*k_sq3 * gasdev());
-    ///////////////////////////////////////////////////////////////////////
+
     // Book keeping:
     m_u2[_atom.Znum] += u[0]*u[0]+u[1]*u[1]+u[2]*u[2];
     //ux += u[0]; uy += u[1]; uz += u[2];
     m_u2Count[_atom.Znum]++;
-
-    /* Finally we must convert the displacement for this atom back into its fractional
-     * coordinates so that we can add it to the current position in vector a
-     */
-    RealVector uf(3,0);
-    MatrixProduct(u,1,3,m_MmInv,3,3,uf);
-    memcpy(&u[0],&uf[0],3*sizeof(float_tt));
 }
 
 /*******************************************************************************
@@ -896,7 +871,7 @@ void CCrystal::PhononDisplacement(RealVector &u,int id,int icx,int icy,
 
   axCell=&Mm[0]; byCell=&Mm[3]; czCell=&Mm[6];
 
-  for (ix=0;ix<3;ix++) for (iy=0;iy<3;iy++) Mm[ix*3+iy]=m_Mm[iy*3+ix];
+  for (ix=0;ix<3;ix++) for (iy=0;iy<3;iy++) Mm[ix*3+iy]=m_cellMm[iy*3+ix];
     
     
   // makeCellVectMuls(muls, axCell, byCell, czCell);
@@ -1061,30 +1036,31 @@ int CCrystal::AtomCompareZYX(const void *atPtr1,const void *atPtr2) {
 	return comp;
 }
 
-void CCrystal::WriteStructure(unsigned run_number)
+/**
+Write a unit cell structure to file.  This would only be valid if no
+thermal displacements have been applied, or if there's only one unit cell.  
+You would use this primarily for file format conversion.
+*/
+void CCrystal::WriteUnitCell()
 {
-  // go to fractional coordinates
-  ConvertCoordinates(FRACTIONAL);
+  // m_baseAtoms is always in fractional coordinates, no need to convert
+  m_structureWriter->Write(m_baseAtoms, m_cellMm);
+}
+
+/**
+Write the supercell, either boxed volume or duplicated cells.  This will include any shuffling of atoms.
+This forces the structure to be simple cubic (all angles 90 degrees).  The output cell dimensions are the
+dimensions of the volume, not of any unit cell that things are based on.
+*/
+void CCrystal::WriteSuperCell(unsigned run_number)
+{
+	// go to fractional coordinates
+  ConvertCoordinates(FRACTIONAL, m_superMm);
   // sort atoms so that the file is as simple as possible
   qsort(&m_atoms[0],m_atoms.size(),sizeof(atom),&CCrystal::AtomCompareZnum);
-  // to_string is C++0x - may not work on older compilers
-  // if we're in box mode, write box dimensions
-  //m_structureWriter->Write(m_atoms, std::to_string(run_number), );
-  // if we're in cell mode, write cell dimensions times ncells
+  // to_string is C++0x - may not work on older compilers (VS < 2012)
   m_structureWriter->Write(m_atoms, std::to_string(run_number), m_superAx, m_superBy, m_superCz,
-		90, 90, 90);
-  /*
-  if (m_cfgFile != NULL) {
-    sprintf(buf,"%s/%s",m_folder,m_cfgFile);
-    // append the TDS run number
-    if (strcmp(buf+strlen(buf)-4,".cfg") == 0) *(buf+strlen(buf)-4) = '\0';
-    if (m_tds) sprintf(buf+strlen(buf),"_%d.cfg",m_avgCount);
-    else sprintf(buf+strlen(buf),".cfg");
-      
-    // printf("Will write CFG file <%s> (%d)\n",buf,m_tds)
-    writeCFG(atoms,natom,buf,muls);
-  }
-  */
+	  90, 90, 90);
 }
 
 void CCrystal::GetCrystalBoundaries(float_tt &min_x, float_tt &max_x, float_tt &min_y, float_tt &max_y)

@@ -48,6 +48,7 @@ inline int getZNumber(std::string element)
 
 inline std::string getSymbol(unsigned ZNumber)
 {
+  if (ZNumber==0) return "";
   std::string elem = elTable.substr(2*ZNumber-2, 2);
   if (elem[1] == ' ') elem.erase(1,1);
   return elem;

@@ -50,6 +50,7 @@ class IStructureWriter
 public:
   virtual int Write(std::vector<atom> &atoms, std::string run_id, float_tt ax, float_tt by, float_tt cz, 
 	  float_tt alpha, float_tt beta, float_tt gamma)=0;
+  virtual int Write(std::vector<atom> &atoms, const RealVector &Mm)=0;
 };
 
 /*--------------------- ReadLine() -----------------------*/

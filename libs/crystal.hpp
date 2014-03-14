@@ -53,7 +53,8 @@ public:
   void PhononDisplacement(RealVector &u,int id,int icx,int icy,
                           int icz,atom &atom,bool printReport);
   void ReplicateUnitCell(int handleVacancies);
-  void WriteStructure(unsigned run_number);
+  void WriteUnitCell();
+  void WriteSuperCell(unsigned run_number);
 
   void DisplayParams();
 
@@ -63,7 +64,7 @@ public:
 
   void DisplaceAtoms();
 
-  void ConvertCoordinates(CoordinateType coord_type);
+  void ConvertCoordinates(CoordinateType coord_type, const RealVector &Mm);
 
   float_tt GetCZ(){return m_superCz;}
   bool GetTDS(){return m_tds;}
@@ -83,19 +84,19 @@ public:
   void GetCrystalBoundaries(float_tt &min_x, float_tt &max_x, float_tt &min_y, float_tt &max_y);
   
 protected:
+
+  void DistinguishSites(std::vector< std::vector<atom> > &sites);
+
   boost::filesystem::path m_structureFile;
 
   std::vector<atom> m_atoms; // The atoms after duplication, tilt, and phonon shaking
   std::vector<atom> m_baseAtoms; // The atoms read directly from the input file (no alteration)
-  RealVector m_Mm;                     /* metric matrix Mm(ax,by,cz,alpha,beta,gamma).  Used to go from fractional
-                                          coordinates to physical cartesian coordinates.  */
-  RealVector m_MmInv;                  /* inverse of metric matrix.  Used to go from physical, cartesian coordinates
-                                          back to fractional coordinates. */
+  RealVector m_cellMm, m_superMm;                     /* metric matrix Mm(ax,by,cz,alpha,beta,gamma).  Used to convert fractional to 
+													  cartesian coordinates and vice versa.  */
   float_tt m_superAx, m_superBy, m_superCz;           /* supercell lattice parameters */
-  float_tt m_cellAx, m_cellBy, m_cellCz;           /* lattice param	eters */
-  float_tt m_cAlpha, m_cBeta, m_cGamma;
-  float_tt m_cubex, m_cubey, m_cubez;  /* dimension of crystal cube, if zero, then nx,ny,nz *
-  //					 * will be used */
+  float_tt m_cellAx, m_cellBy, m_cellCz;           /* lattice parameters */
+  float_tt m_cAlpha, m_cBeta, m_cGamma;				/* angles of unit cell.  No equivalent for supercell - it is always simple cubic. */
+  float_tt m_cubex, m_cubey, m_cubez;  /* dimension of crystal cube, if zero, then ncells determines cube size */
   float_tt m_maxX, m_minX;
   float_tt m_maxY, m_minY;
   float_tt m_maxZ, m_minZ;

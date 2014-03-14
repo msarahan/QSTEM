@@ -111,9 +111,10 @@ BOOST_AUTO_TEST_CASE( testTiltBoxed )
 BOOST_AUTO_TEST_CASE( testWriteStructure )
 {
 	bool handleVacancies=false;
-	cryst->ReplicateUnitCell(handleVacancies);
+	cryst->SetNCells(2,2,2);
+	//cryst->ReplicateUnitCell(handleVacancies);
 	// should write file with 8100 entries, because the displaced atoms need to be recorded
-	cryst->WriteStructure(1);
+	cryst->WriteSuperCell(1);
 
 }
 

@@ -22,6 +22,7 @@
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_01.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
 #include <boost/random/normal_distribution.hpp>
 
 namespace QSTEM
@@ -33,7 +34,8 @@ static boost::random::uniform_01<float_tt> _ran1;    // This returns uniform ran
 inline float_tt ran1(){return _ran1(_rng);}
 static boost::random::normal_distribution<float_tt> _gasdev(0,1); // This returns uniform random values with a Gaussian normal distribution
 inline float_tt gasdev(){return _gasdev(_rng);}
-
+static boost::random::uniform_int_distribution<int> _random_integer;
+inline int random_integer(){return _random_integer(_rng);}
 } // end namespace QSTEM
 
 #endif
