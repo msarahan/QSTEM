@@ -12,7 +12,7 @@ set(Boost_USE_MULTITHREADED      ON)
 set(Boost_USE_STATIC_RUNTIME     OFF)
 set(BOOST_ALL_DYN_LINK           ON)   # force dynamic linking for all libraries
 
-find_package(Boost 1.35.0 COMPONENTS unit_test_framework REQUIRED)
+find_package(Boost 1.49.0 COMPONENTS unit_test_framework filesystem system REQUIRED)
 
 FILE(GLOB QSTEM_LIB_HEADERS "${CMAKE_SOURCE_DIR}/libs/*.h")
 FILE(GLOB STEM3_HEADERS "${CMAKE_SOURCE_DIR}/stem3/*.h" )
